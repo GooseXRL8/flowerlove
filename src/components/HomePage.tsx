@@ -13,11 +13,8 @@ const HomePage: React.FC = () => {
   // State for theme
   const [theme, setTheme] = useState<Theme>('default');
   
-  // State for relationship start date
-  const [startDate, setStartDate] = useState<Date>(() => {
-    const saved = localStorage.getItem('relationshipStartDate');
-    return saved ? new Date(saved) : new Date(2023, 0, 1); // Default: January 1, 2023
-  });
+  // Fixed relationship start date: September 7, 2024
+  const startDate = new Date(2024, 8, 7); // Note: Month is 0-indexed, so 8 = September
   
   // State for duration
   const [duration, setDuration] = useState({
@@ -50,16 +47,6 @@ const HomePage: React.FC = () => {
     });
   };
   
-  // Handle date change
-  const handleDateChange = (date: Date) => {
-    setStartDate(date);
-    localStorage.setItem('relationshipStartDate', date.toISOString());
-    toast({
-      title: "Data atualizada",
-      description: "A data de início do relacionamento foi atualizada.",
-    });
-  };
-  
   return (
     <div className="min-h-screen flex flex-col items-center justify-start py-8 px-4 animate-fade-in">
       <header className="w-full max-w-md mb-6 text-center">
@@ -70,7 +57,7 @@ const HomePage: React.FC = () => {
       </header>
       
       <main className="w-full max-w-md space-y-8">
-        <DatePicker date={startDate} onDateChange={handleDateChange} />
+        <DatePicker date={startDate} onDateChange={() => {}} />
         
         <TimeCounter startDate={startDate} onTimeUpdate={setDuration} />
         
