@@ -4,75 +4,102 @@ import { Card, CardContent } from "@/components/ui/card";
 
 interface TimeCounterProps {
   startDate: Date;
-  onTimeUpdate: (duration: {
-    years: number;
-    months: number;
-    days: number;
-    hours: number;
-    minutes: number;
-  }) => void;
+  onTimeUpdate: (duration: { years: number; months: number; days: number; hours: number; minutes: number; }) => void;
 }
 
 const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) => {
-  const [seconds, setSeconds] = useState(0);
   const [timeElapsed, setTimeElapsed] = useState({
     years: 0,
     months: 0,
     days: 0,
     hours: 0,
-    minutes: 0
+    minutes: 0,
+    seconds: 0
   });
 
   useEffect(() => {
     const calculateTimeElapsed = () => {
       const now = new Date();
-      let diff = Math.floor((now.getTime() - startDate.getTime()) / 1000); // total seconds
+      const diff = now.getTime() - startDate.getTime();
       
-      const years = Math.floor(diff / (365 * 24 * 3600));
-      diff %= (365 * 24 * 3600);
+      // Calculate years, months, days, hours, minutes, seconds
+      const seconds = Math.floor(diff / 1000) % 60;
+      const minutes = Math.floor(diff / (1000 * 60)) % 60;
+      const hours = Math.floor(diff / (1000 * 60 * 60)) % 24;
       
-      const months = Math.floor(diff / (30 * 24 * 3600));
-      diff %= (30 * 24 * 3600);
+      // Use a more accurate calculation for years, months, days
+      let startDateCopy = new Date(startDate);
+      let years = 0, months = 0, days = 0;
       
-      const days = Math.floor(diff / (24 * 3600));
-      diff %= (24 * 3600);
+      // Calculate years
+      while (true) {
+        const nextYear = new Date(startDateCopy);
+        nextYear.setFullYear(nextYear.getFullYear() + 1);
+        if (nextYear > now) break;
+        startDateCopy = nextYear;
+        years++;
+      }
       
-      const hours = Math.floor(diff / 3600);
-      diff %= 3600;
+      // Calculate months
+      while (true) {
+        const nextMonth = new Date(startDateCopy);
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        if (nextMonth > now) break;
+        startDateCopy = nextMonth;
+        months++;
+      }
       
-      const minutes = Math.floor(diff / 60);
-      const seconds = diff % 60;
+      // Calculate days
+      while (true) {
+        const nextDay = new Date(startDateCopy);
+        nextDay.setDate(nextDay.getDate() + 1);
+        if (nextDay > now) break;
+        startDateCopy = nextDay;
+        days++;
+      }
       
-      setSeconds(seconds);
-      const newTimeElapsed = { years, months, days, hours, minutes };
+      const newTimeElapsed = { years, months, days, hours, minutes, seconds };
       setTimeElapsed(newTimeElapsed);
-      onTimeUpdate(newTimeElapsed);
+      
+      // Update parent component with time duration (excluding seconds)
+      onTimeUpdate({ years, months, days, hours, minutes });
     };
     
+    // Calculate initial time
     calculateTimeElapsed();
+    
+    // Update time every second
     const interval = setInterval(calculateTimeElapsed, 1000);
+    
     return () => clearInterval(interval);
   }, [startDate, onTimeUpdate]);
   
   return (
-    <div className="text-center space-y-4">
-      <h2 className="text-2xl font-bold mb-4">Tempo de Relacionamento</h2>
-      <div className="grid grid-cols-3 gap-4 sm:grid-cols-6">
-        <TimeUnit value={timeElapsed.years} unit="Anos" />
-        <TimeUnit value={timeElapsed.months} unit="Meses" />
-        <TimeUnit value={timeElapsed.days} unit="Dias" />
-        <TimeUnit value={timeElapsed.hours} unit="Horas" />
-        <TimeUnit value={timeElapsed.minutes} unit="Min" />
-        <TimeUnit value={seconds} unit="Seg" />
-      </div>
-    </div>
+    <Card className="w-full max-w-md mx-auto shadow-md border-2 border-primary/20 bg-gradient-to-b from-background to-accent/50">
+      <CardContent className="py-6">
+        <h2 className="text-center font-medium text-lg mb-4 text-foreground">Tempo de Relacionamento</h2>
+        
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+          <TimeUnit value={timeElapsed.years} unit="Anos" />
+          <TimeUnit value={timeElapsed.months} unit="Meses" />
+          <TimeUnit value={timeElapsed.days} unit="Dias" />
+          <TimeUnit value={timeElapsed.hours} unit="Horas" />
+          <TimeUnit value={timeElapsed.minutes} unit="Minutos" />
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
-const TimeUnit: React.FC<{ value: number; unit: string }> = ({ value, unit }) => (
-  <div className="text-center">
-    <div className="text-xl font-bold">{value}</div>
-    <div className="text-sm text-gray-400">{unit}</div>
+interface TimeUnitProps {
+  value: number;
+  unit: string;
+}
+
+const TimeUnit: React.FC<TimeUnitProps> = ({ value, unit }) => (
+  <div className="flex flex-col items-center p-2">
+    <div className="text-xl sm:text-2xl font-bold text-primary">{value}</div>
+    <div className="text-xs sm:text-sm text-muted-foreground">{unit}</div>
   </div>
 );
 
