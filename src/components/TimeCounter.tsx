@@ -1,15 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
-import { Heart } from "lucide-react";
 
 interface TimeCounterProps {
   startDate: Date;
   onTimeUpdate: (duration: { years: number; months: number; days: number; hours: number; minutes: number; }) => void;
-  coupleNames?: { partner1: string; partner2: string; } | null;
 }
 
-const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate, coupleNames }) => {
+const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) => {
   const [timeElapsed, setTimeElapsed] = useState({
     years: 0,
     months: 0,
@@ -76,27 +74,17 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate, coup
     return () => clearInterval(interval);
   }, [startDate, onTimeUpdate]);
   
-  const heading = coupleNames 
-    ? `${coupleNames.partner1} ❤️ ${coupleNames.partner2}` 
-    : "Tempo de Amor";
-  
   return (
-    <Card className="w-full max-w-md mx-auto shadow-md border-2 border-primary/30 bg-gradient-to-b from-background to-accent/50 relative overflow-hidden">
-      <div className="absolute -right-6 -top-6 opacity-5">
-        <Heart size={120} className="fill-primary text-transparent" />
-      </div>
-      <CardContent className="py-6 relative z-10">
-        <h2 className="text-center font-medium text-xl mb-6 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          {heading}
-        </h2>
+    <Card className="w-full max-w-md mx-auto shadow-md border-2 border-primary/20 bg-gradient-to-b from-background to-accent/50">
+      <CardContent className="py-6">
+        <h2 className="text-center font-medium text-lg mb-4 text-foreground">Tempo de Relacionamento</h2>
         
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
           <TimeUnit value={timeElapsed.years} unit="Anos" />
           <TimeUnit value={timeElapsed.months} unit="Meses" />
           <TimeUnit value={timeElapsed.days} unit="Dias" />
           <TimeUnit value={timeElapsed.hours} unit="Horas" />
           <TimeUnit value={timeElapsed.minutes} unit="Minutos" />
-          <TimeUnit value={timeElapsed.seconds} unit="Segundos" className="animate-pulse" />
         </div>
       </CardContent>
     </Card>
@@ -106,14 +94,11 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate, coup
 interface TimeUnitProps {
   value: number;
   unit: string;
-  className?: string;
 }
 
-const TimeUnit: React.FC<TimeUnitProps> = ({ value, unit, className = "" }) => (
-  <div className={`flex flex-col items-center p-2 ${className}`}>
-    <div className="text-xl sm:text-2xl font-bold bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent">
-      {value}
-    </div>
+const TimeUnit: React.FC<TimeUnitProps> = ({ value, unit }) => (
+  <div className="flex flex-col items-center p-2">
+    <div className="text-xl sm:text-2xl font-bold text-primary">{value}</div>
     <div className="text-xs sm:text-sm text-muted-foreground">{unit}</div>
   </div>
 );
