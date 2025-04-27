@@ -79,12 +79,12 @@ export default {
 			},
 			keyframes: {
 				'accordion-down': {
-					from: { height: '0' },
-					to: { height: 'var(--radix-accordion-content-height)' }
+					from: { height: '0', opacity: '0' },
+					to: { height: 'var(--radix-accordion-content-height)', opacity: '1' }
 				},
 				'accordion-up': {
-					from: { height: 'var(--radix-accordion-content-height)' },
-					to: { height: '0' }
+					from: { height: 'var(--radix-accordion-content-height)', opacity: '1' },
+					to: { height: '0', opacity: '0' }
 				},
 				'flower-grow': {
 					'0%': { transform: 'scale(0.5)', opacity: '0.7' },
@@ -98,6 +98,14 @@ export default {
 				'fade-in': {
 					'0%': { opacity: '0', transform: 'translateY(10px)' },
 					'100%': { opacity: '1', transform: 'translateY(0)' }
+				},
+				'rose-petal-appear': {
+					'0%': { opacity: '0', transform: 'scale(0)' },
+					'100%': { opacity: '0.8', transform: 'scale(1)' }
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' }
 				}
 			},
 			animation: {
@@ -105,7 +113,12 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'flower-grow': 'flower-grow 3s ease-out forwards',
 				'pulse-slow': 'pulse-slow 3s infinite ease-in-out',
-				'fade-in': 'fade-in 0.5s ease-out forwards'
+				'fade-in': 'fade-in 0.5s ease-out forwards',
+				'float': 'float 6s ease-in-out infinite'
+			},
+			fontFamily: {
+				cursive: ['Playfair Display', 'serif'],
+				sans: ['Inter', 'sans-serif'],
 			}
 		}
 	},
