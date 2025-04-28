@@ -76,52 +76,31 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
   }, [startDate, onTimeUpdate]);
   
   return (
-    <div className="relative w-full max-w-md mx-auto">
-      {/* Glowing effects background */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        {Array.from({ length: 15 }).map((_, i) => (
-          <div
-            key={i}
-            className={`absolute w-3 h-3 rounded-full animate-falling-glow ${
-              i % 2 === 0 ? 'bg-rose-400' : 'bg-red-500'
-            }`}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 30 - 40}%`,
-              opacity: 0.7,
-              animationDelay: `${i * 0.5}s`,
-              animationDuration: `${4 + Math.random() * 4}s`
-            }}
-          />
-        ))}
-      </div>
-
-      <Card className="w-full max-w-md mx-auto shadow-lg border-2 border-primary/20 bg-gradient-to-b from-background to-accent/50 overflow-hidden relative z-10">
-        <CardContent className="p-0">
-          <div className="w-full">
-            <AspectRatio ratio={16/12} className="bg-accent/20">
-              <img 
-                src="/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png" 
-                alt="Couple photo" 
-                className="w-full h-full object-cover rounded-t-lg"
-              />
-            </AspectRatio>
-          </div>
+    <Card className="w-full max-w-md mx-auto shadow-lg border-2 border-primary/20 bg-gradient-to-b from-background to-accent/50 overflow-hidden">
+      <CardContent className="p-0">
+        <div className="w-full">
+          <AspectRatio ratio={16/12} className="bg-accent/20">
+            <img 
+              src="/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png" 
+              alt="Couple photo" 
+              className="w-full h-full object-cover rounded-t-lg"
+            />
+          </AspectRatio>
+        </div>
+        
+        <div className="py-6 px-4">
+          <h2 className="text-center font-medium text-lg mb-4 text-foreground">Tempo de Relacionamento</h2>
           
-          <div className="py-6 px-4">
-            <h2 className="text-center font-medium text-lg mb-4 text-foreground">Tempo de Relacionamento</h2>
-            
-            <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-              <TimeUnit value={timeElapsed.years} unit="Anos" />
-              <TimeUnit value={timeElapsed.months} unit="Meses" />
-              <TimeUnit value={timeElapsed.days} unit="Dias" />
-              <TimeUnit value={timeElapsed.hours} unit="Horas" />
-              <TimeUnit value={timeElapsed.minutes} unit="Minutos" />
-            </div>
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+            <TimeUnit value={timeElapsed.years} unit="Anos" />
+            <TimeUnit value={timeElapsed.months} unit="Meses" />
+            <TimeUnit value={timeElapsed.days} unit="Dias" />
+            <TimeUnit value={timeElapsed.hours} unit="Horas" />
+            <TimeUnit value={timeElapsed.minutes} unit="Minutos" />
           </div>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 
