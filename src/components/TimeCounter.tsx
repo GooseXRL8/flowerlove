@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 interface TimeCounterProps {
   startDate: Date;
@@ -75,16 +76,28 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
   }, [startDate, onTimeUpdate]);
   
   return (
-    <Card className="w-full max-w-md mx-auto shadow-md border-2 border-primary/20 bg-gradient-to-b from-background to-accent/50">
-      <CardContent className="py-6">
-        <h2 className="text-center font-medium text-lg mb-4 text-foreground">Tempo de Relacionamento</h2>
+    <Card className="w-full max-w-md mx-auto shadow-lg border-2 border-primary/20 bg-gradient-to-b from-background to-accent/50 overflow-hidden">
+      <CardContent className="p-0">
+        <div className="w-full">
+          <AspectRatio ratio={16/12} className="bg-accent/20">
+            <img 
+              src="/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png" 
+              alt="Couple photo" 
+              className="w-full h-full object-cover rounded-t-lg"
+            />
+          </AspectRatio>
+        </div>
         
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-          <TimeUnit value={timeElapsed.years} unit="Anos" />
-          <TimeUnit value={timeElapsed.months} unit="Meses" />
-          <TimeUnit value={timeElapsed.days} unit="Dias" />
-          <TimeUnit value={timeElapsed.hours} unit="Horas" />
-          <TimeUnit value={timeElapsed.minutes} unit="Minutos" />
+        <div className="py-6 px-4">
+          <h2 className="text-center font-medium text-lg mb-4 text-foreground">Tempo de Relacionamento</h2>
+          
+          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+            <TimeUnit value={timeElapsed.years} unit="Anos" />
+            <TimeUnit value={timeElapsed.months} unit="Meses" />
+            <TimeUnit value={timeElapsed.days} unit="Dias" />
+            <TimeUnit value={timeElapsed.hours} unit="Horas" />
+            <TimeUnit value={timeElapsed.minutes} unit="Minutos" />
+          </div>
         </div>
       </CardContent>
     </Card>
