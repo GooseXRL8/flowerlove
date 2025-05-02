@@ -10,6 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { getWeddingAnniversaryName } from "@/utils/weddingAnniversary";
 
 interface DatePickerProps {
   date: Date;
@@ -17,8 +18,22 @@ interface DatePickerProps {
 }
 
 export function DatePicker({ date }: DatePickerProps) {
+  // Calcular o número de anos desde a data de início
+  const currentDate = new Date();
+  const yearDiff = currentDate.getFullYear() - date.getFullYear();
+  const monthDiff = currentDate.getMonth() - date.getMonth();
+  const dateDiff = currentDate.getDate() - date.getDate();
+  
+  // Ajustar para o caso em que ainda não se completou um ano inteiro
+  const years = (monthDiff < 0 || (monthDiff === 0 && dateDiff < 0))
+    ? yearDiff - 1
+    : yearDiff;
+  
+  // Obter o nome das bodas
+  const anniversaryName = getWeddingAnniversaryName(years);
+  
   return (
-    <div className="flex flex-col items-center space-y-2">
+    <div className="flex flex-col items-center space-y-4">
       <label className="text-muted-foreground text-sm">Data de início do relacionamento</label>
       <Popover>
         <PopoverTrigger asChild>
@@ -35,6 +50,13 @@ export function DatePicker({ date }: DatePickerProps) {
           </Button>
         </PopoverTrigger>
       </Popover>
+      
+      <div className="w-full max-w-xs mx-auto">
+        <div className="bg-gradient-to-r from-love-pink/30 to-love-purple/30 rounded-lg p-3 text-center border border-primary/20 shadow-sm">
+          <p className="text-sm text-muted-foreground">Celebração atual</p>
+          <h3 className="text-lg font-semibold text-primary">{anniversaryName}</h3>
+        </div>
+      </div>
     </div>
   );
 }

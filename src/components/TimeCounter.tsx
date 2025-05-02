@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { getWeddingAnniversaryName } from '@/utils/weddingAnniversary';
 
 interface TimeCounterProps {
   startDate: Date;
@@ -17,6 +18,8 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
     minutes: 0,
     seconds: 0
   });
+
+  const [anniversaryName, setAnniversaryName] = useState<string>("Namoro");
 
   useEffect(() => {
     const calculateTimeElapsed = () => {
@@ -61,6 +64,10 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
       
       const newTimeElapsed = { years, months, days, hours, minutes, seconds };
       setTimeElapsed(newTimeElapsed);
+      
+      // Get anniversary name based on years
+      const anniversary = getWeddingAnniversaryName(years);
+      setAnniversaryName(anniversary);
       
       // Update parent component with time duration (excluding seconds)
       onTimeUpdate({ years, months, days, hours, minutes });
