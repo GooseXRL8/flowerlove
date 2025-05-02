@@ -6,12 +6,18 @@ import FlowerAnimation from './FlowerAnimation';
 import ThemeSwitcher from './ThemeSwitcher';
 import DatePicker from './DatePicker';
 import { toast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 
 type Theme = 'default' | 'purple' | 'green';
 
 const HomePage: React.FC = () => {
   // State for theme
   const [theme, setTheme] = useState<Theme>('default');
+  
+  // State for active tab
+  const [activeTab, setActiveTab] = useState<string>("main");
   
   // Fixed relationship start date: September 7, 2024
   const startDate = new Date(2024, 8, 7); // Note: Month is 0-indexed, so 8 = September
@@ -49,25 +55,49 @@ const HomePage: React.FC = () => {
   
   return (
     <div className="min-h-screen flex flex-col items-center justify-start py-8 px-4 animate-fade-in">
-      <header className="w-full max-w-md mb-6 text-center">
+      <header className="w-full max-w-md mb-6 text-center relative">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
           Nosso Amor
         </h1>
         <p className="text-muted-foreground">Acompanhe o crescimento do seu amor</p>
+        
+        <div className="absolute right-0 top-0">
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="opacity-50 hover:opacity-100 transition-opacity"
+            onClick={() => setActiveTab(activeTab === "main" ? "memorials" : "main")}
+          >
+            <Menu size={16} />
+          </Button>
+        </div>
       </header>
       
       <main className="w-full max-w-md space-y-8">
-        <DatePicker date={startDate} onDateChange={() => {}} />
-        
-        <TimeCounter startDate={startDate} onTimeUpdate={setDuration} />
-        
-        <Card>
-          <CardContent className="flex items-center justify-center py-6">
-            <FlowerAnimation relationshipDuration={duration} />
-          </CardContent>
-        </Card>
-        
-        <ThemeSwitcher currentTheme={theme} onThemeChange={handleThemeChange} />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="hidden">
+            <TabsTrigger value="main">Principal</TabsTrigger>
+            <TabsTrigger value="memorials">Memórias</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="main" className="space-y-8">
+            <DatePicker date={startDate} onDateChange={() => {}} />
+            
+            <TimeCounter startDate={startDate} onTimeUpdate={setDuration} />
+            
+            <Card>
+              <CardContent className="flex items-center justify-center py-6">
+                <FlowerAnimation relationshipDuration={duration} />
+              </CardContent>
+            </Card>
+            
+            <ThemeSwitcher currentTheme={theme} onThemeChange={handleThemeChange} />
+          </TabsContent>
+          
+          <TabsContent value="memorials" className="space-y-8">
+            <MemorialsTab startDate={startDate} />
+          </TabsContent>
+        </Tabs>
       </main>
       
       <footer className="mt-auto pt-8 text-center text-sm text-muted-foreground">
