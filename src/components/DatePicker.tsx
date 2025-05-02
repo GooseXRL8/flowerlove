@@ -25,12 +25,22 @@ export function DatePicker({ date }: DatePickerProps) {
   const dateDiff = currentDate.getDate() - date.getDate();
   
   // Ajustar para o caso em que ainda não se completou um ano inteiro
-  const years = (monthDiff < 0 || (monthDiff === 0 && dateDiff < 0))
+  let years = (monthDiff < 0 || (monthDiff === 0 && dateDiff < 0))
     ? yearDiff - 1
     : yearDiff;
   
+  // Calcular meses quando for menos de um ano
+  let months = 0;
+  if (years === 0) {
+    months = monthDiff >= 0 ? monthDiff : 12 + monthDiff;
+    // Ajustar para o caso em que ainda não se completou um mês inteiro
+    if (dateDiff < 0) {
+      months = months > 0 ? months - 1 : 0;
+    }
+  }
+  
   // Obter o nome das bodas
-  const anniversaryName = getWeddingAnniversaryName(years);
+  const anniversaryName = getWeddingAnniversaryName(years, months);
   
   return (
     <div className="flex flex-col items-center space-y-4">

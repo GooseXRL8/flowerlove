@@ -2,7 +2,27 @@
 /**
  * Retorna o nome da bodas de acordo com o tempo de relacionamento
  */
-export function getWeddingAnniversaryName(years: number): string {
+export function getWeddingAnniversaryName(years: number, months: number = 0): string {
+  // Se tiver menos de 1 ano, mostrar bodas de mês
+  if (years === 0 && months > 0) {
+    const monthlyAnniversaries: Record<number, string> = {
+      1: "Bodas de Beijinho",
+      2: "Bodas de Sorvete",
+      3: "Bodas de Algodão-doce",
+      4: "Bodas de Pipoca",
+      5: "Bodas de Chocolate",
+      6: "Bodas de Plumas",
+      7: "Bodas de Purpurina",
+      8: "Bodas de Pompom",
+      9: "Bodas de Maternidade",
+      10: "Bodas de Milagre",
+      11: "Bodas de Chiclete"
+    };
+    
+    return monthlyAnniversaries[months] || "Namoro";
+  }
+  
+  // Se tiver 1 ano ou mais, mostrar bodas de ano
   const anniversaries: Record<number, string> = {
     0: "Namoro",
     1: "Bodas de Papel",

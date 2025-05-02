@@ -65,8 +65,10 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
       const newTimeElapsed = { years, months, days, hours, minutes, seconds };
       setTimeElapsed(newTimeElapsed);
       
-      // Get anniversary name based on years
-      const anniversary = getWeddingAnniversaryName(years);
+      // Get anniversary name based on years and months
+      // Se for menos de 1 ano, usar meses; caso contrário, usar anos
+      const monthsForAnniversary = years === 0 ? months : 0;
+      const anniversary = getWeddingAnniversaryName(years, monthsForAnniversary);
       setAnniversaryName(anniversary);
       
       // Update parent component with time duration (excluding seconds)
