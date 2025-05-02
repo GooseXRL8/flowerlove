@@ -5,10 +5,12 @@ import TimeCounter from './TimeCounter';
 import FlowerAnimation from './FlowerAnimation';
 import ThemeSwitcher from './ThemeSwitcher';
 import DatePicker from './DatePicker';
+import MemorialsTab from './MemorialsTab';
+import SettingsTab from './SettingsTab';
 import { toast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
+import { Menu, Settings } from "lucide-react";
 
 type Theme = 'default' | 'purple' | 'green';
 
@@ -19,8 +21,14 @@ const HomePage: React.FC = () => {
   // State for active tab
   const [activeTab, setActiveTab] = useState<string>("main");
   
+  // State for app title
+  const [appTitle, setAppTitle] = useState<string>("Nosso Amor");
+  
+  // State for the main image URL
+  const [mainImageUrl, setMainImageUrl] = useState<string>("/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png");
+  
   // Fixed relationship start date: September 7, 2024
-  const startDate = new Date(2024, 8, 7); // Note: Month is 0-indexed, so 8 = September
+  const [startDate, setStartDate] = useState<Date>(new Date(2024, 8, 7)); // Note: Month is 0-indexed, so 8 = September
   
   // State for duration
   const [duration, setDuration] = useState({
@@ -43,6 +51,18 @@ const HomePage: React.FC = () => {
     if (theme === 'green') document.body.classList.add('theme-green');
   }, [theme]);
   
+  // Effect to load saved settings from localStorage
+  useEffect(() => {
+    const savedTitle = localStorage.getItem('appTitle');
+    if (savedTitle) setAppTitle(savedTitle);
+    
+    const savedImageUrl = localStorage.getItem('mainImageUrl');
+    if (savedImageUrl) setMainImageUrl(savedImageUrl);
+    
+    const savedStartDate = localStorage.getItem('startDate');
+    if (savedStartDate) setStartDate(new Date(savedStartDate));
+  }, []);
+  
   // Handle theme change
   const handleThemeChange = (newTheme: Theme) => {
     setTheme(newTheme);
@@ -53,20 +73,46 @@ const HomePage: React.FC = () => {
     });
   };
   
+  // Handle title change
+  const handleTitleChange = (newTitle: string) => {
+    setAppTitle(newTitle);
+    localStorage.setItem('appTitle', newTitle);
+  };
+  
+  // Handle date change
+  const handleDateChange = (newDate: Date) => {
+    setStartDate(newDate);
+    localStorage.setItem('startDate', newDate.toISOString());
+  };
+  
+  // Handle image change
+  const handleImageChange = (newImageUrl: string) => {
+    setMainImageUrl(newImageUrl);
+    localStorage.setItem('mainImageUrl', newImageUrl);
+  };
+  
   return (
     <div className="min-h-screen flex flex-col items-center justify-start py-8 px-4 animate-fade-in">
       <header className="w-full max-w-md mb-6 text-center relative">
         <h1 className="text-3xl sm:text-4xl font-bold mb-2 bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-          Nosso Amor
+          {appTitle}
         </h1>
         <p className="text-muted-foreground">Acompanhe o crescimento do seu amor</p>
         
-        <div className="absolute right-0 top-0">
+        <div className="absolute right-0 top-0 flex gap-1">
           <Button 
             variant="ghost" 
             size="sm"
             className="opacity-50 hover:opacity-100 transition-opacity"
-            onClick={() => setActiveTab(activeTab === "main" ? "memorials" : "main")}
+            onClick={() => setActiveTab(activeTab === "settings" ? "main" : "settings")}
+          >
+            <Settings size={16} />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm"
+            className="opacity-50 hover:opacity-100 transition-opacity"
+            onClick={() => setActiveTab(activeTab === "memorials" ? "main" : "memorials")}
           >
             <Menu size={16} />
           </Button>
@@ -78,6 +124,7 @@ const HomePage: React.FC = () => {
           <TabsList className="hidden">
             <TabsTrigger value="main">Principal</TabsTrigger>
             <TabsTrigger value="memorials">Memórias</TabsTrigger>
+            <TabsTrigger value="settings">Configurações</TabsTrigger>
           </TabsList>
           
           <TabsContent value="main" className="space-y-8">
@@ -96,6 +143,16 @@ const HomePage: React.FC = () => {
           
           <TabsContent value="memorials" className="space-y-8">
             <MemorialsTab startDate={startDate} />
+          </TabsContent>
+          
+          <TabsContent value="settings" className="space-y-8">
+            <SettingsTab 
+              title={appTitle} 
+              startDate={startDate} 
+              onTitleChange={handleTitleChange} 
+              onDateChange={handleDateChange} 
+              onImageChange={handleImageChange}
+            />
           </TabsContent>
         </Tabs>
       </main>

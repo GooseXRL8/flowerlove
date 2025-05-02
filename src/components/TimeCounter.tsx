@@ -20,6 +20,15 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
   });
 
   const [anniversaryName, setAnniversaryName] = useState<string>("Namoro");
+  const [mainImageUrl, setMainImageUrl] = useState<string>("/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png");
+
+  useEffect(() => {
+    // Get saved image URL from localStorage
+    const savedImageUrl = localStorage.getItem('mainImageUrl');
+    if (savedImageUrl) {
+      setMainImageUrl(savedImageUrl);
+    }
+  }, []);
 
   useEffect(() => {
     const calculateTimeElapsed = () => {
@@ -83,6 +92,19 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
     
     return () => clearInterval(interval);
   }, [startDate, onTimeUpdate]);
+
+  // Listen for storage events to update the image when changed from settings
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const savedImageUrl = localStorage.getItem('mainImageUrl');
+      if (savedImageUrl) {
+        setMainImageUrl(savedImageUrl);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
   
   return (
     <Card className="w-full max-w-md mx-auto shadow-lg border-2 border-primary/20 bg-gradient-to-b from-background to-accent/50 overflow-hidden">
@@ -90,9 +112,14 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
         <div className="w-full">
           <AspectRatio ratio={16/12} className="bg-accent/20">
             <img 
-              src="/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png" 
+              src={mainImageUrl} 
               alt="Couple photo" 
               className="w-full h-full object-cover rounded-t-lg"
+              onError={(e) => {
+                // If image fails to load, revert to default
+                const target = e.target as HTMLImageElement;
+                target.src = "/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png";
+              }}
             />
           </AspectRatio>
         </div>
