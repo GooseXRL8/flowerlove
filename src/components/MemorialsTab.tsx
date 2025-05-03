@@ -11,7 +11,7 @@ import { toast } from "@/hooks/use-toast";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
-import { useMediaQuery } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MemorialsTabProps {
   startDate: Date;
@@ -63,7 +63,7 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
   });
 
   // For responsive drawer/dialog
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+  const isMobile = useIsMobile();
 
   // Function to handle "Relembrar" button click
   const handleRememberClick = (memory: Memory) => {
@@ -201,7 +201,7 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
       ))}
       
       <div className="text-center pt-4">
-        {isDesktop ? (
+        {!isMobile ? (
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="flex items-center gap-2">
