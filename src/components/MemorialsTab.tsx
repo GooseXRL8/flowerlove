@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Heart, Plus, BookOpen } from "lucide-react";
+import { Heart, Plus, BookOpen, Trash } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,16 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, For
 import { useForm } from "react-hook-form";
 import { Drawer, DrawerContent, DrawerDescription, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle 
+} from "@/components/ui/alert-dialog";
 
 interface MemorialsTabProps {
   startDate: Date;
@@ -22,6 +32,7 @@ interface Memory {
   title: string;
   description: string;
   date: Date;
+  isFavorite?: boolean;
 }
 
 interface MemoryFormValues {
@@ -41,17 +52,22 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
       title: "Primeiro Encontro",
       description: "O dia em que nos conhecemos pessoalmente pela primeira vez.",
       date: new Date(startDate.getTime()),
+      isFavorite: false,
     },
     {
       id: '2',
       title: "Primeira Viagem Juntos",
       description: "Nossa primeira aventura viajando juntos.",
       date: new Date(startDate.getTime() + 60 * 24 * 60 * 60 * 1000), // 60 days after start
+      isFavorite: false,
     }
   ]);
 
   // State for selected memory for reminder dialog
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
+  
+  // State for delete confirmation dialog
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
   // Form for adding new memories
   const form = useForm<MemoryFormValues>({
@@ -77,6 +93,7 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
       title: data.title,
       description: data.description,
       date: new Date(data.date),
+      isFavorite: false,
     };
     
     setMemories([...memories, newMemory]);
@@ -86,6 +103,40 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
       title: "Memória adicionada",
       description: `"${data.title}" foi adicionada às suas memórias.`,
     });
+  };
+  
+  // Function to toggle favorite status of a memory
+  const handleToggleFavorite = (memory: Memory) => {
+    const updatedMemories = memories.map((item) => 
+      item.id === memory.id ? { ...item, isFavorite: !item.isFavorite } : item
+    );
+    
+    setMemories(updatedMemories);
+    
+    // Find the updated memory to show appropriate toast message
+    const updatedMemory = updatedMemories.find(item => item.id === memory.id);
+    if (updatedMemory) {
+      toast({
+        title: updatedMemory.isFavorite ? "Memória favoritada" : "Memória desfavoritada",
+        description: `"${updatedMemory.title}" foi ${updatedMemory.isFavorite ? 'adicionada aos' : 'removida dos'} favoritos.`,
+      });
+    }
+  };
+  
+  // Function to delete a memory
+  const handleDeleteMemory = () => {
+    if (!selectedMemory) return;
+    
+    const filteredMemories = memories.filter(memory => memory.id !== selectedMemory.id);
+    setMemories(filteredMemories);
+    
+    toast({
+      title: "Memória excluída",
+      description: `"${selectedMemory.title}" foi removida das suas memórias.`,
+    });
+    
+    setSelectedMemory(null);
+    setIsDeleteDialogOpen(false);
   };
 
   // Add Memory Form Content
@@ -174,9 +225,9 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>
-                  <DialogTitle>{memory.title}</DialogTitle>
+                  <DialogTitle>{selectedMemory?.title}</DialogTitle>
                   <DialogDescription>
-                    {memory.date.toLocaleDateString('pt-BR', { 
+                    {selectedMemory?.date.toLocaleDateString('pt-BR', { 
                       day: 'numeric',
                       month: 'long', 
                       year: 'numeric'
@@ -185,14 +236,28 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
                 </DialogHeader>
                 <div className="py-4">
                   <p className="text-sm text-muted-foreground mb-4">Detalhes desta memória:</p>
-                  <p>{memory.description}</p>
+                  <p>{selectedMemory?.description}</p>
                 </div>
-                <DialogFooter>
-                  <Button variant="outline">Fechar</Button>
-                  <Button variant="ghost" className="flex items-center gap-2">
-                    <Heart size={16} />
-                    <span>Favoritar</span>
+                <DialogFooter className="flex justify-between sm:justify-between">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                  >
+                    <Trash size={16} />
                   </Button>
+                  <div className="flex space-x-2">
+                    <Button variant="outline">Fechar</Button>
+                    <Button 
+                      variant={selectedMemory?.isFavorite ? "secondary" : "ghost"} 
+                      className={`flex items-center gap-2 ${selectedMemory?.isFavorite ? "bg-pink-100 text-pink-700 hover:bg-pink-200" : ""}`}
+                      onClick={() => selectedMemory && handleToggleFavorite(selectedMemory)}
+                    >
+                      <Heart size={16} fill={selectedMemory?.isFavorite ? "currentColor" : "none"} />
+                      <span>{selectedMemory?.isFavorite ? "Favoritado" : "Favoritar"}</span>
+                    </Button>
+                  </div>
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -241,6 +306,28 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
           </Drawer>
         )}
       </div>
+      
+      {/* Alert Dialog para confirmar exclusão */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. Esta memória será permanentemente excluída
+              dos seus registros.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteMemory}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
