@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -20,22 +20,65 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
   const daysSinceStart = Math.floor((new Date().getTime() - startDate.getTime()) / (1000 * 3600 * 24));
   
   // State for memories
-  const [memories, setMemories] = useState<Memory[]>([
-    {
-      id: '1',
-      title: "Primeiro Encontro",
-      description: "O dia em que nos conhecemos pessoalmente pela primeira vez.",
-      date: new Date(startDate.getTime()),
-      isFavorite: false,
-    },
-    {
-      id: '2',
-      title: "Primeira Viagem Juntos",
-      description: "Nossa primeira aventura viajando juntos.",
-      date: new Date(startDate.getTime() + 60 * 24 * 60 * 60 * 1000), // 60 days after start
-      isFavorite: false,
+  const [memories, setMemories] = useState<Memory[]>([]);
+  
+  // Load memories from localStorage on component mount
+  useEffect(() => {
+    const savedMemories = localStorage.getItem('memories');
+    if (savedMemories) {
+      try {
+        // Parse the JSON string and convert date strings back to Date objects
+        const parsedMemories = JSON.parse(savedMemories).map((memory: any) => ({
+          ...memory,
+          date: new Date(memory.date)
+        }));
+        setMemories(parsedMemories);
+      } catch (error) {
+        console.error("Failed to parse memories from localStorage:", error);
+        // If there's an error parsing, initialize with default memories
+        initializeDefaultMemories();
+      }
+    } else {
+      // If no memories in localStorage, initialize with defaults
+      initializeDefaultMemories();
     }
-  ]);
+  }, [startDate]);
+  
+  // Function to initialize default memories
+  const initializeDefaultMemories = () => {
+    const defaultMemories = [
+      {
+        id: '1',
+        title: "Primeiro Encontro",
+        description: "O dia em que nos conhecemos pessoalmente pela primeira vez.",
+        date: new Date(startDate.getTime()),
+        isFavorite: false,
+      },
+      {
+        id: '2',
+        title: "Primeira Viagem Juntos",
+        description: "Nossa primeira aventura viajando juntos.",
+        date: new Date(startDate.getTime() + 60 * 24 * 60 * 60 * 1000), // 60 days after start
+        isFavorite: false,
+      }
+    ];
+    
+    setMemories(defaultMemories);
+    saveMemoriesToLocalStorage(defaultMemories);
+  };
+
+  // Function to save memories to localStorage
+  const saveMemoriesToLocalStorage = (memoriesToSave: Memory[]) => {
+    try {
+      localStorage.setItem('memories', JSON.stringify(memoriesToSave));
+    } catch (error) {
+      console.error("Failed to save memories to localStorage:", error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar suas memórias localmente.",
+      });
+    }
+  };
 
   // State for selected memory for dialog
   const [selectedMemory, setSelectedMemory] = useState<Memory | null>(null);
@@ -60,7 +103,9 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
       isFavorite: false,
     };
     
-    setMemories([...memories, newMemory]);
+    const updatedMemories = [...memories, newMemory];
+    setMemories(updatedMemories);
+    saveMemoriesToLocalStorage(updatedMemories);
     
     toast({
       title: "Memória adicionada",
@@ -75,6 +120,7 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
     );
     
     setMemories(updatedMemories);
+    saveMemoriesToLocalStorage(updatedMemories);
     
     // Find the updated memory to show appropriate toast message
     const updatedMemory = updatedMemories.find(item => item.id === memory.id);
@@ -90,6 +136,7 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
   const handleDeleteMemory = (memoryToDelete: Memory) => {
     const filteredMemories = memories.filter(memory => memory.id !== memoryToDelete.id);
     setMemories(filteredMemories);
+    saveMemoriesToLocalStorage(filteredMemories);
     
     setIsDialogOpen(false);
     

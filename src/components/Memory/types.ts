@@ -4,5 +4,5 @@ export interface Memory {
   title: string;
   description: string;
   date: Date;
-  isFavorite?: boolean;
+  isFavorite: boolean;
 }
