@@ -65,6 +65,42 @@ export const initDatabase = async () => {
         args: ["1", "Casal Padrão", "1", new Date().toISOString()]
       });
     }
+    
+    // Check if "joao" admin user exists
+    const joaoResult = await client.execute({
+      sql: "SELECT * FROM users WHERE username = ?",
+      args: ["joao"]
+    });
+    
+    // If "joao" admin user doesn't exist, create it
+    if (joaoResult.rows.length === 0) {
+      await client.execute({
+        sql: "INSERT INTO users (id, username, password, isAdmin) VALUES (?, ?, ?, ?)",
+        args: ["joao_admin", "joao", "joao123", 1]
+      });
+    }
+    
+    // Check if "teste" regular user exists
+    const testeResult = await client.execute({
+      sql: "SELECT * FROM users WHERE username = ?",
+      args: ["teste"]
+    });
+    
+    // If "teste" user doesn't exist, create it along with a profile
+    if (testeResult.rows.length === 0) {
+      // Create profile for teste user
+      const profileId = "teste_profile";
+      await client.execute({
+        sql: "INSERT INTO profiles (id, name, createdBy, startDate, assignedUserId) VALUES (?, ?, ?, ?, ?)",
+        args: [profileId, "Perfil Teste", "joao_admin", new Date().toISOString(), "teste_user"]
+      });
+      
+      // Create teste user
+      await client.execute({
+        sql: "INSERT INTO users (id, username, password, isAdmin, assignedProfileId) VALUES (?, ?, ?, ?, ?)",
+        args: ["teste_user", "teste", "abacate123", 0, profileId]
+      });
+    }
 
     console.log("Database initialized successfully");
     return true;
