@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,20 +10,32 @@ import { useToast } from "@/hooks/use-toast";
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const { login, currentUser } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  
+  useEffect(() => {
+    // If already logged in, redirect to appropriate page
+    if (currentUser) {
+      navigate(currentUser.isAdmin ? '/admin' : '/dashboard');
+    }
+  }, [currentUser, navigate]);
   
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log("Login attempt with:", username, password);
     
     if (login(username, password)) {
       toast({
         title: "Login bem-sucedido",
         description: "Você foi autenticado com sucesso!",
       });
-      navigate('/dashboard');
+      
+      // Let the useEffect handle redirection
     } else {
+      console.log("Login failed");
       toast({
         title: "Falha no login",
         description: "Nome de usuário ou senha incorretos",

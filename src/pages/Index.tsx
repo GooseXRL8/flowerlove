@@ -8,9 +8,18 @@ const Index = () => {
   const { currentUser } = useAuth();
   
   useEffect(() => {
+    console.log("Index - currentUser:", currentUser);
+    
     if (currentUser) {
-      navigate('/dashboard');
+      if (currentUser.isAdmin) {
+        console.log("Index - Redirecting admin to /admin");
+        navigate('/admin');
+      } else {
+        console.log("Index - Redirecting user to /dashboard");
+        navigate('/dashboard');
+      }
     } else {
+      console.log("Index - No user, redirecting to /login");
       navigate('/login');
     }
   }, [currentUser, navigate]);

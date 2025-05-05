@@ -120,11 +120,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const login = (username: string, password: string) => {
-    const user = users.find(u => u.username === username && u.password === password);
+    console.log("Login attempt:", username, password);
+    console.log("Available users:", users);
+    
+    const user = users.find(u => 
+      u.username.toLowerCase() === username.toLowerCase() && 
+      u.password === password
+    );
+    
     if (user) {
+      console.log("User found, logging in:", user);
       setCurrentUser(user);
       return true;
     }
+    console.log("User not found or password incorrect");
     return false;
   };
 
