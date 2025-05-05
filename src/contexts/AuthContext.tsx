@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, CoupleProfile } from '@/types/auth';
 import { initDatabase, dbUsers, dbProfiles } from '@/services/database';
@@ -134,9 +133,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       assignedProfileId: profileId
     };
     
-    await dbUsers.create(newUser);
+    const success = await dbUsers.create(newUser);
+    if (!success) {
+      throw new Error('Failed to create user in database');
+    }
+    
     setUsers(prev => [...prev, newUser]);
-    return newUser;
+    return newUser; // Return the user object directly, not a Promise
   };
 
   const createProfile = async (name: string) => {

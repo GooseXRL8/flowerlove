@@ -49,7 +49,7 @@ const AdminDashboard = () => {
     }
   };
   
-  const handleCreateUser = () => {
+  const handleCreateUser = async () => {
     if (!newUsername.trim() || !selectedProfileId) {
       toast({
         title: "Erro",
@@ -60,11 +60,12 @@ const AdminDashboard = () => {
     }
     
     try {
-      const newUser = createUser(newUsername, false, selectedProfileId);
+      // Wait for the user to be created and then get the result
+      const newUser = await createUser(newUsername, false, selectedProfileId);
       setNewUsername('');
       setSelectedProfileId(null);
       
-      assignUserToProfile(newUser.id, selectedProfileId);
+      await assignUserToProfile(newUser.id, selectedProfileId);
       
       toast({
         title: "Usuário criado",
