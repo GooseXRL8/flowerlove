@@ -5,9 +5,11 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const { currentUser, loading } = useAuth();
   
   useEffect(() => {
+    if (loading) return;
+    
     console.log("Index - currentUser:", currentUser);
     
     if (currentUser) {
@@ -22,9 +24,13 @@ const Index = () => {
       console.log("Index - No user, redirecting to /login");
       navigate('/login');
     }
-  }, [currentUser, navigate]);
+  }, [currentUser, navigate, loading]);
   
-  return <div className="flex items-center justify-center h-screen">Redirecionando...</div>;
+  return (
+    <div className="flex items-center justify-center h-screen">
+      {loading ? "Carregando..." : "Redirecionando..."}
+    </div>
+  );
 };
 
 export default Index;

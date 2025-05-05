@@ -10,42 +10,55 @@ import { Memory } from "./Memory/types";
 import MemoryCard from "./Memory/MemoryCard";
 import MemoryDialog from "./Memory/MemoryDialog";
 import MemoryForm, { MemoryFormValues } from "./Memory/MemoryForm";
+import { dbMemories } from '@/services/database';
+import { useParams } from 'react-router-dom';
 
 interface MemorialsTabProps {
   startDate: Date;
 }
 
 const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
+  // Get profile ID from URL
+  const { profileId } = useParams<{ profileId: string }>();
+  
   // Calculate how many days since the relationship started
   const daysSinceStart = Math.floor((new Date().getTime() - startDate.getTime()) / (1000 * 3600 * 24));
   
   // State for memories
   const [memories, setMemories] = useState<Memory[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  // Load memories from localStorage on component mount
+  // Load memories from database on component mount
   useEffect(() => {
-    const savedMemories = localStorage.getItem('memories');
-    if (savedMemories) {
+    const loadMemories = async () => {
+      if (!profileId) return;
+      
       try {
-        // Parse the JSON string and convert date strings back to Date objects
-        const parsedMemories = JSON.parse(savedMemories).map((memory: any) => ({
-          ...memory,
-          date: new Date(memory.date)
-        }));
-        setMemories(parsedMemories);
+        setLoading(true);
+        const loadedMemories = await dbMemories.getByProfileId(profileId);
+        
+        if (loadedMemories.length > 0) {
+          setMemories(loadedMemories);
+        } else {
+          // If no memories in database, initialize with defaults
+          initializeDefaultMemories();
+        }
       } catch (error) {
-        console.error("Failed to parse memories from localStorage:", error);
-        // If there's an error parsing, initialize with default memories
+        console.error("Failed to load memories from database:", error);
+        // If there's an error loading, initialize with default memories
         initializeDefaultMemories();
+      } finally {
+        setLoading(false);
       }
-    } else {
-      // If no memories in localStorage, initialize with defaults
-      initializeDefaultMemories();
-    }
-  }, [startDate]);
+    };
+    
+    loadMemories();
+  }, [profileId, startDate]);
   
   // Function to initialize default memories
-  const initializeDefaultMemories = () => {
+  const initializeDefaultMemories = async () => {
+    if (!profileId) return;
+    
     const defaultMemories = [
       {
         id: '1',
@@ -63,19 +76,18 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
       }
     ];
     
-    setMemories(defaultMemories);
-    saveMemoriesToLocalStorage(defaultMemories);
-  };
-
-  // Function to save memories to localStorage
-  const saveMemoriesToLocalStorage = (memoriesToSave: Memory[]) => {
     try {
-      localStorage.setItem('memories', JSON.stringify(memoriesToSave));
+      // Save default memories to database
+      for (const memory of defaultMemories) {
+        await dbMemories.create(memory, profileId);
+      }
+      
+      setMemories(defaultMemories);
     } catch (error) {
-      console.error("Failed to save memories to localStorage:", error);
+      console.error("Failed to save default memories to database:", error);
       toast({
         title: "Erro ao salvar",
-        description: "Não foi possível salvar suas memórias localmente.",
+        description: "Não foi possível salvar suas memórias.",
       });
     }
   };
@@ -94,7 +106,9 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
   };
 
   // Function to handle adding new memory
-  const handleAddMemory = (data: MemoryFormValues) => {
+  const handleAddMemory = async (data: MemoryFormValues) => {
+    if (!profileId) return;
+    
     const newMemory: Memory = {
       id: Date.now().toString(),
       title: data.title,
@@ -103,48 +117,91 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
       isFavorite: false,
     };
     
-    const updatedMemories = [...memories, newMemory];
-    setMemories(updatedMemories);
-    saveMemoriesToLocalStorage(updatedMemories);
-    
-    toast({
-      title: "Memória adicionada",
-      description: `"${data.title}" foi adicionada às suas memórias.`,
-    });
+    try {
+      // Save to database
+      await dbMemories.create(newMemory, profileId);
+      
+      // Update state
+      setMemories(prev => [...prev, newMemory]);
+      
+      toast({
+        title: "Memória adicionada",
+        description: `"${data.title}" foi adicionada às suas memórias.`,
+      });
+    } catch (error) {
+      console.error("Failed to save memory to database:", error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar a memória.",
+        variant: "destructive"
+      });
+    }
   };
   
   // Function to toggle favorite status of a memory
-  const handleToggleFavorite = (memory: Memory) => {
-    const updatedMemories = memories.map((item) => 
-      item.id === memory.id ? { ...item, isFavorite: !item.isFavorite } : item
-    );
+  const handleToggleFavorite = async (memory: Memory) => {
+    if (!profileId) return;
     
-    setMemories(updatedMemories);
-    saveMemoriesToLocalStorage(updatedMemories);
+    const updatedMemory = { ...memory, isFavorite: !memory.isFavorite };
     
-    // Find the updated memory to show appropriate toast message
-    const updatedMemory = updatedMemories.find(item => item.id === memory.id);
-    if (updatedMemory) {
+    try {
+      // Update in database
+      await dbMemories.update(updatedMemory, profileId);
+      
+      // Update state
+      const updatedMemories = memories.map((item) => 
+        item.id === memory.id ? updatedMemory : item
+      );
+      
+      setMemories(updatedMemories);
+      
       toast({
         title: updatedMemory.isFavorite ? "Memória favoritada" : "Memória desfavoritada",
         description: `"${updatedMemory.title}" foi ${updatedMemory.isFavorite ? 'adicionada aos' : 'removida dos'} favoritos.`,
+      });
+    } catch (error) {
+      console.error("Failed to update memory in database:", error);
+      toast({
+        title: "Erro ao atualizar",
+        description: "Não foi possível atualizar a memória.",
+        variant: "destructive"
       });
     }
   };
   
   // Function to delete a memory
-  const handleDeleteMemory = (memoryToDelete: Memory) => {
-    const filteredMemories = memories.filter(memory => memory.id !== memoryToDelete.id);
-    setMemories(filteredMemories);
-    saveMemoriesToLocalStorage(filteredMemories);
+  const handleDeleteMemory = async (memoryToDelete: Memory) => {
+    if (!profileId) return;
     
-    setIsDialogOpen(false);
-    
-    toast({
-      title: "Memória excluída",
-      description: `"${memoryToDelete.title}" foi removida das suas memórias.`,
-    });
+    try {
+      // Delete from database
+      await dbMemories.deleteById(memoryToDelete.id, profileId);
+      
+      // Update state
+      setMemories(prev => prev.filter(memory => memory.id !== memoryToDelete.id));
+      setIsDialogOpen(false);
+      
+      toast({
+        title: "Memória excluída",
+        description: `"${memoryToDelete.title}" foi removida das suas memórias.`,
+      });
+    } catch (error) {
+      console.error("Failed to delete memory from database:", error);
+      toast({
+        title: "Erro ao excluir",
+        description: "Não foi possível excluir a memória.",
+        variant: "destructive"
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center p-8">
+        <p>Carregando memórias...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -157,13 +214,19 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
         </p>
       </div>
 
-      {memories.map((memory) => (
-        <MemoryCard 
-          key={memory.id} 
-          memory={memory} 
-          onRememberClick={handleRememberClick} 
-        />
-      ))}
+      {memories.length === 0 ? (
+        <div className="text-center p-6 border rounded-lg">
+          <p className="text-muted-foreground">Nenhuma memória encontrada. Adicione sua primeira memória!</p>
+        </div>
+      ) : (
+        memories.map((memory) => (
+          <MemoryCard 
+            key={memory.id} 
+            memory={memory} 
+            onRememberClick={handleRememberClick} 
+          />
+        ))
+      )}
       
       <div className="text-center pt-4">
         {!isMobile ? (

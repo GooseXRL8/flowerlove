@@ -10,12 +10,14 @@ import { CoupleProfile } from '@/types/auth';
 
 const ProfilePage = () => {
   const { profileId } = useParams<{ profileId: string }>();
-  const { currentUser, profiles, users } = useAuth();
+  const { currentUser, profiles, users, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<CoupleProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (authLoading) return;
+    
     if (!profileId) {
       toast({
         title: "Erro",
@@ -53,9 +55,9 @@ const ProfilePage = () => {
 
     setProfile(foundProfile);
     setLoading(false);
-  }, [profileId, profiles, currentUser, navigate]);
+  }, [profileId, profiles, currentUser, navigate, authLoading]);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Carregando...</p>

@@ -10,39 +10,62 @@ import { useToast } from "@/hooks/use-toast";
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const { login, currentUser } = useAuth();
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const { login, currentUser, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   
   useEffect(() => {
     // If already logged in, redirect to appropriate page
-    if (currentUser) {
+    if (currentUser && !loading) {
       navigate(currentUser.isAdmin ? '/admin' : '/dashboard');
     }
-  }, [currentUser, navigate]);
+  }, [currentUser, navigate, loading]);
   
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     console.log("Login attempt with:", username, password);
     
-    if (login(username, password)) {
-      toast({
-        title: "Login bem-sucedido",
-        description: "Você foi autenticado com sucesso!",
-      });
+    try {
+      setIsLoggingIn(true);
+      const success = await login(username, password);
       
-      // Let the useEffect handle redirection
-    } else {
-      console.log("Login failed");
+      if (success) {
+        toast({
+          title: "Login bem-sucedido",
+          description: "Você foi autenticado com sucesso!",
+        });
+        
+        // Let the useEffect handle redirection
+      } else {
+        console.log("Login failed");
+        toast({
+          title: "Falha no login",
+          description: "Nome de usuário ou senha incorretos",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Login error:", error);
       toast({
-        title: "Falha no login",
-        description: "Nome de usuário ou senha incorretos",
+        title: "Erro no login",
+        description: "Ocorreu um erro ao tentar fazer login",
         variant: "destructive",
       });
+    } finally {
+      setIsLoggingIn(false);
     }
   };
+  
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <p>Carregando...</p>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -64,6 +87,7 @@ const Login = () => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
+                disabled={isLoggingIn}
                 required
               />
             </div>
@@ -76,13 +100,14 @@ const Login = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                disabled={isLoggingIn}
                 required
               />
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full">
-              Entrar
+            <Button type="submit" className="w-full" disabled={isLoggingIn}>
+              {isLoggingIn ? 'Entrando...' : 'Entrar'}
             </Button>
           </CardFooter>
         </form>

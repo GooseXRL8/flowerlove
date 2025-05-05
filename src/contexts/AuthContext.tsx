@@ -1,18 +1,20 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, CoupleProfile } from '@/types/auth';
+import { initDatabase, dbUsers, dbProfiles } from '@/services/database';
 
 interface AuthContextType {
   currentUser: User | null;
   profiles: CoupleProfile[];
-  login: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
-  createUser: (username: string, isAdmin: boolean, profileId?: string) => User;
-  createProfile: (name: string) => CoupleProfile;
-  deleteProfile: (id: string) => void;
-  updateProfile: (id: string, data: Partial<CoupleProfile>) => void;
-  assignUserToProfile: (userId: string, profileId: string) => void;
+  createUser: (username: string, isAdmin: boolean, profileId?: string) => Promise<User>;
+  createProfile: (name: string) => Promise<CoupleProfile>;
+  deleteProfile: (id: string) => Promise<void>;
+  updateProfile: (id: string, data: Partial<CoupleProfile>) => Promise<void>;
+  assignUserToProfile: (userId: string, profileId: string) => Promise<void>;
   users: User[];
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -21,84 +23,63 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [profiles, setProfiles] = useState<CoupleProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dbInitialized, setDbInitialized] = useState(false);
 
-  // Load data from localStorage on mount
+  // Initialize database and load data
   useEffect(() => {
-    const savedUser = localStorage.getItem('currentUser');
-    const savedUsers = localStorage.getItem('users');
-    const savedProfiles = localStorage.getItem('profiles');
+    const init = async () => {
+      try {
+        setLoading(true);
+        const initialized = await initDatabase();
+        if (initialized) {
+          setDbInitialized(true);
+        }
+      } catch (error) {
+        console.error("Failed to initialize database:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    if (savedUser) setCurrentUser(JSON.parse(savedUser));
-    if (savedUsers) {
-      try {
-        setUsers(JSON.parse(savedUsers));
-      } catch (e) {
-        console.error('Failed to parse users from localStorage');
-        setupDefaultUsers();
-      }
-    } else {
-      setupDefaultUsers();
-    }
-    
-    if (savedProfiles) {
-      try {
-        // Convert date strings back to Date objects
-        const parsedProfiles = JSON.parse(savedProfiles).map((profile: any) => ({
-          ...profile,
-          startDate: new Date(profile.startDate)
-        }));
-        setProfiles(parsedProfiles);
-      } catch (e) {
-        console.error('Failed to parse profiles from localStorage');
-        setupDefaultProfiles();
-      }
-    } else {
-      setupDefaultProfiles();
-    }
+    init();
   }, []);
 
-  const setupDefaultUsers = () => {
-    const defaultUsers = [
-      {
-        id: '1',
-        username: 'admin',
-        password: 'admin123',
-        isAdmin: true
+  // Load data from database when it's initialized
+  useEffect(() => {
+    const loadData = async () => {
+      if (!dbInitialized) return;
+      
+      try {
+        setLoading(true);
+        
+        // Load users
+        const dbLoadedUsers = await dbUsers.getAll();
+        setUsers(dbLoadedUsers);
+        
+        // Load profiles
+        const dbLoadedProfiles = await dbProfiles.getAll();
+        setProfiles(dbLoadedProfiles);
+        
+        // Load current user from localStorage (just the ID)
+        const savedUserId = localStorage.getItem('currentUserId');
+        if (savedUserId) {
+          const user = await dbUsers.getById(savedUserId);
+          if (user) {
+            setCurrentUser(user);
+          } else {
+            localStorage.removeItem('currentUserId');
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load data from database:", error);
+      } finally {
+        setLoading(false);
       }
-    ];
-    setUsers(defaultUsers);
-    localStorage.setItem('users', JSON.stringify(defaultUsers));
-  };
+    };
 
-  const setupDefaultProfiles = () => {
-    const defaultProfiles = [
-      {
-        id: '1',
-        name: 'Casal Padrão',
-        createdBy: '1', // admin user id
-        startDate: new Date(),
-      }
-    ];
-    setProfiles(defaultProfiles);
-    localStorage.setItem('profiles', JSON.stringify(defaultProfiles));
-  };
-
-  // Save data to localStorage whenever it changes
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem('currentUser');
-    }
-  }, [currentUser]);
-
-  useEffect(() => {
-    localStorage.setItem('users', JSON.stringify(users));
-  }, [users]);
-
-  useEffect(() => {
-    localStorage.setItem('profiles', JSON.stringify(profiles));
-  }, [profiles]);
+    loadData();
+  }, [dbInitialized]);
 
   // Helper function to generate random password
   const generatePassword = () => {
@@ -119,7 +100,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return password;
   };
 
-  const login = (username: string, password: string) => {
+  const login = async (username: string, password: string) => {
     console.log("Login attempt:", username, password);
     console.log("Available users:", users);
     
@@ -131,6 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (user) {
       console.log("User found, logging in:", user);
       setCurrentUser(user);
+      localStorage.setItem('currentUserId', user.id);
       return true;
     }
     console.log("User not found or password incorrect");
@@ -139,9 +121,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const logout = () => {
     setCurrentUser(null);
+    localStorage.removeItem('currentUserId');
   };
 
-  const createUser = (username: string, isAdmin: boolean, profileId?: string) => {
+  const createUser = async (username: string, isAdmin: boolean, profileId?: string) => {
     const password = generatePassword();
     const newUser: User = {
       id: Date.now().toString(),
@@ -151,11 +134,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       assignedProfileId: profileId
     };
     
+    await dbUsers.create(newUser);
     setUsers(prev => [...prev, newUser]);
     return newUser;
   };
 
-  const createProfile = (name: string) => {
+  const createProfile = async (name: string) => {
     if (!currentUser?.isAdmin) {
       throw new Error('Only admins can create profiles');
     }
@@ -167,51 +151,75 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       startDate: new Date(),
     };
     
+    await dbProfiles.create(newProfile);
     setProfiles(prev => [...prev, newProfile]);
     return newProfile;
   };
 
-  const deleteProfile = (id: string) => {
+  const deleteProfile = async (id: string) => {
     if (!currentUser?.isAdmin) {
       throw new Error('Only admins can delete profiles');
     }
     
-    // Remove any users assigned to this profile
+    // Update any users assigned to this profile
     const updatedUsers = users.map(user => {
       if (user.assignedProfileId === id) {
-        return {...user, assignedProfileId: undefined};
+        const updatedUser = {...user, assignedProfileId: undefined};
+        dbUsers.update(updatedUser);
+        return updatedUser;
       }
       return user;
     });
     
+    await dbProfiles.deleteById(id);
     setUsers(updatedUsers);
     setProfiles(prev => prev.filter(profile => profile.id !== id));
   };
 
-  const updateProfile = (id: string, data: Partial<CoupleProfile>) => {
+  const updateProfile = async (id: string, data: Partial<CoupleProfile>) => {
+    const profileToUpdate = profiles.find(p => p.id === id);
+    if (!profileToUpdate) return;
+    
+    const updatedProfile = { ...profileToUpdate, ...data };
+    await dbProfiles.update(updatedProfile);
+    
     setProfiles(prev => 
       prev.map(profile => 
-        profile.id === id ? { ...profile, ...data } : profile
+        profile.id === id ? updatedProfile : profile
       )
     );
   };
 
-  const assignUserToProfile = (userId: string, profileId: string) => {
+  const assignUserToProfile = async (userId: string, profileId: string) => {
     if (!currentUser?.isAdmin) {
       throw new Error('Only admins can assign users to profiles');
     }
     
-    setUsers(prev => 
-      prev.map(user => 
-        user.id === userId ? { ...user, assignedProfileId: profileId } : user
-      )
-    );
+    // Update user
+    const userToUpdate = users.find(u => u.id === userId);
+    if (userToUpdate) {
+      const updatedUser = { ...userToUpdate, assignedProfileId: profileId };
+      await dbUsers.update(updatedUser);
+      
+      setUsers(prev => 
+        prev.map(user => 
+          user.id === userId ? updatedUser : user
+        )
+      );
+    }
     
-    setProfiles(prev => 
-      prev.map(profile => 
-        profile.id === profileId ? { ...profile, assignedUserId: userId } : profile
-      )
-    );
+    // Update profile
+    const profileToUpdate = profiles.find(p => p.id === profileId);
+    if (profileToUpdate) {
+      const updatedProfile = { ...profileToUpdate, assignedUserId: userId };
+      await dbProfiles.update(updatedProfile);
+      
+      setProfiles(prev => 
+        prev.map(profile => 
+          profile.id === profileId ? updatedProfile : profile
+        )
+      );
+    }
   };
 
   return (
@@ -225,7 +233,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       deleteProfile,
       updateProfile,
       assignUserToProfile,
-      users
+      users,
+      loading
     }}>
       {children}
     </AuthContext.Provider>
