@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import { Card, CardContent } from "@/components/ui/card";
 import TimeCounter from './TimeCounter';
 import FlowerAnimation from './FlowerAnimation';
@@ -7,14 +8,21 @@ import ThemeSwitcher from './ThemeSwitcher';
 import DatePicker from './DatePicker';
 import MemorialsTab from './MemorialsTab';
 import SettingsTab from './SettingsTab';
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Menu, Settings } from "lucide-react";
+import { useAuth } from '@/hooks/useAuth/AuthContext';
 
 type Theme = 'default' | 'purple' | 'green';
 
 const HomePage: React.FC = () => {
+  // Get the profile ID from URL
+  const { profileId } = useParams<{ profileId: string }>();
+  
+  // Get auth context for saving changes
+  const { profiles, updateProfile } = useAuth();
+  
   // State for theme
   const [theme, setTheme] = useState<Theme>('default');
   
@@ -27,7 +35,7 @@ const HomePage: React.FC = () => {
   // State for the main image URL
   const [mainImageUrl, setMainImageUrl] = useState<string>("/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png");
   
-  // Fixed relationship start date: September 7, 2024
+  // State for relationship start date
   const [startDate, setStartDate] = useState<Date>(new Date(2024, 8, 7)); // Note: Month is 0-indexed, so 8 = September
   
   // State for duration
@@ -39,29 +47,35 @@ const HomePage: React.FC = () => {
     minutes: 0
   });
   
-  // Effect to apply theme
+  // Effect to load profile data
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as Theme;
-    if (savedTheme) {
-      setTheme(savedTheme);
-    }
+    if (!profileId) return;
     
-    document.body.classList.remove('theme-purple', 'theme-green');
-    if (theme === 'purple') document.body.classList.add('theme-purple');
-    if (theme === 'green') document.body.classList.add('theme-green');
-  }, [theme]);
-  
-  // Effect to load saved settings from localStorage
-  useEffect(() => {
+    // Find the profile in the profiles array
+    const profile = profiles.find(p => p.id === profileId);
+    if (!profile) return;
+    
+    // Set state from profile data
+    if (profile.customTitle) setAppTitle(profile.customTitle);
+    if (profile.startDate) setStartDate(profile.startDate);
+    
+    // Also load data from localStorage as fallback
     const savedTitle = localStorage.getItem('appTitle');
-    if (savedTitle) setAppTitle(savedTitle);
+    if (!profile.customTitle && savedTitle) setAppTitle(savedTitle);
     
     const savedImageUrl = localStorage.getItem('mainImageUrl');
     if (savedImageUrl) setMainImageUrl(savedImageUrl);
     
-    const savedStartDate = localStorage.getItem('startDate');
-    if (savedStartDate) setStartDate(new Date(savedStartDate));
-  }, []);
+    const savedTheme = localStorage.getItem('theme') as Theme;
+    if (savedTheme) setTheme(savedTheme);
+  }, [profileId, profiles]);
+  
+  // Effect to apply theme
+  useEffect(() => {
+    document.body.classList.remove('theme-purple', 'theme-green');
+    if (theme === 'purple') document.body.classList.add('theme-purple');
+    if (theme === 'green') document.body.classList.add('theme-green');
+  }, [theme]);
   
   // Handle theme change
   const handleThemeChange = (newTheme: Theme) => {
@@ -74,15 +88,33 @@ const HomePage: React.FC = () => {
   };
   
   // Handle title change
-  const handleTitleChange = (newTitle: string) => {
+  const handleTitleChange = async (newTitle: string) => {
     setAppTitle(newTitle);
     localStorage.setItem('appTitle', newTitle);
+    
+    // Save to database if we have a profile ID
+    if (profileId) {
+      try {
+        await updateProfile(profileId, { customTitle: newTitle });
+      } catch (error) {
+        console.error("Failed to update profile title:", error);
+      }
+    }
   };
   
   // Handle date change
-  const handleDateChange = (newDate: Date) => {
+  const handleDateChange = async (newDate: Date) => {
     setStartDate(newDate);
     localStorage.setItem('startDate', newDate.toISOString());
+    
+    // Save to database if we have a profile ID
+    if (profileId) {
+      try {
+        await updateProfile(profileId, { startDate: newDate });
+      } catch (error) {
+        console.error("Failed to update profile date:", error);
+      }
+    }
   };
   
   // Handle image change
@@ -128,7 +160,7 @@ const HomePage: React.FC = () => {
           </TabsList>
           
           <TabsContent value="main" className="space-y-8">
-            <DatePicker date={startDate} onDateChange={() => {}} />
+            <DatePicker date={startDate} onDateChange={handleDateChange} />
             
             <TimeCounter startDate={startDate} onTimeUpdate={setDuration} />
             

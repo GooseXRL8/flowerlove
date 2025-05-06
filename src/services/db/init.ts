@@ -89,7 +89,8 @@ export const initDatabase = async () => {
         date TEXT NOT NULL,
         location TEXT,
         imageUrl TEXT,
-        tags TEXT
+        tags TEXT,
+        isFavorite INTEGER DEFAULT 0
       )
     `);
     

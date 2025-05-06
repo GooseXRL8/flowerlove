@@ -4,10 +4,12 @@ import { useAuth } from '@/hooks/useAuth/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
+import { Trash2 } from "lucide-react";
 
 export const UsersTab = () => {
-  const { users, profiles, createUser, assignUserToProfile } = useAuth();
+  const { users, profiles, createUser, assignUserToProfile, deleteUser } = useAuth();
   const [newUsername, setNewUsername] = useState('');
   const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
 
@@ -40,6 +42,22 @@ export const UsersTab = () => {
       toast({
         title: "Erro",
         description: "Não foi possível criar o usuário",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await deleteUser(userId);
+      toast({
+        title: "Usuário excluído",
+        description: "O usuário foi excluído com sucesso"
+      });
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível excluir o usuário",
         variant: "destructive"
       });
     }
@@ -109,6 +127,27 @@ export const UsersTab = () => {
                         </p>
                       )}
                     </div>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="destructive" size="sm">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Excluir usuário</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Tem certeza que deseja excluir o usuário "{user.username}"? Esta ação não pode ser desfeita.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteUser(user.id)}>
+                            Excluir
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 </CardContent>
               </Card>

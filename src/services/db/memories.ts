@@ -17,6 +17,9 @@ export const dbMemories = {
         description: row.description as string,
         date: new Date(row.date as string),
         isFavorite: Boolean(row.isFavorite),
+        location: row.location as string | undefined,
+        imageUrl: row.imageUrl as string | undefined,
+        tags: row.tags ? (row.tags as string).split(',') : undefined
       }));
     } catch (error) {
       console.error("Failed to get memories:", error);
@@ -27,14 +30,17 @@ export const dbMemories = {
   create: async (memory: Memory, profileId: string): Promise<boolean> => {
     try {
       await client.execute({
-        sql: "INSERT INTO memories (id, title, description, date, isFavorite, profileId) VALUES (?, ?, ?, ?, ?, ?)",
+        sql: "INSERT INTO memories (id, title, description, date, isFavorite, profileId, location, imageUrl, tags) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
         args: [
           memory.id,
           memory.title,
           memory.description,
           memory.date.toISOString(),
           memory.isFavorite ? 1 : 0,
-          profileId
+          profileId,
+          memory.location || null,
+          memory.imageUrl || null,
+          memory.tags ? memory.tags.join(',') : null
         ]
       });
       return true;
@@ -47,12 +53,15 @@ export const dbMemories = {
   update: async (memory: Memory, profileId: string): Promise<boolean> => {
     try {
       await client.execute({
-        sql: "UPDATE memories SET title = ?, description = ?, date = ?, isFavorite = ? WHERE id = ? AND profileId = ?",
+        sql: "UPDATE memories SET title = ?, description = ?, date = ?, isFavorite = ?, location = ?, imageUrl = ?, tags = ? WHERE id = ? AND profileId = ?",
         args: [
           memory.title,
           memory.description,
           memory.date.toISOString(),
           memory.isFavorite ? 1 : 0,
+          memory.location || null,
+          memory.imageUrl || null,
+          memory.tags ? memory.tags.join(',') : null,
           memory.id,
           profileId
         ]

@@ -12,6 +12,7 @@ export const dbProfiles = {
         name: row.name as string,
         createdBy: row.createdBy as string,
         startDate: new Date(row.startDate as string),
+        customTitle: row.customTitle as string | undefined,
         assignedUserId: row.assignedUserId as string | undefined
       }));
     } catch (error) {
@@ -35,6 +36,7 @@ export const dbProfiles = {
         name: profile.name as string,
         createdBy: profile.createdBy as string,
         startDate: new Date(profile.startDate as string),
+        customTitle: profile.customTitle as string | undefined,
         assignedUserId: profile.assignedUserId as string | undefined
       };
     } catch (error) {
@@ -46,12 +48,13 @@ export const dbProfiles = {
   create: async (profile: CoupleProfile): Promise<boolean> => {
     try {
       await client.execute({
-        sql: "INSERT INTO profiles (id, name, createdBy, startDate, assignedUserId) VALUES (?, ?, ?, ?, ?)",
+        sql: "INSERT INTO profiles (id, name, createdBy, startDate, customTitle, assignedUserId) VALUES (?, ?, ?, ?, ?, ?)",
         args: [
           profile.id,
           profile.name,
           profile.createdBy,
           profile.startDate.toISOString(),
+          profile.customTitle || null,
           profile.assignedUserId || null
         ]
       });
@@ -64,12 +67,14 @@ export const dbProfiles = {
 
   update: async (profile: CoupleProfile): Promise<boolean> => {
     try {
+      console.log("Updating profile:", profile);
       await client.execute({
-        sql: "UPDATE profiles SET name = ?, createdBy = ?, startDate = ?, assignedUserId = ? WHERE id = ?",
+        sql: "UPDATE profiles SET name = ?, createdBy = ?, startDate = ?, customTitle = ?, assignedUserId = ? WHERE id = ?",
         args: [
           profile.name,
           profile.createdBy,
           profile.startDate.toISOString(),
+          profile.customTitle || null,
           profile.assignedUserId || null,
           profile.id
         ]

@@ -120,6 +120,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return newUser;
   };
 
+  const deleteUser = async (id: string) => {
+    if (!currentUser?.isAdmin) {
+      throw new Error('Only admins can delete users');
+    }
+    
+    // Find the user and their associated profile
+    const userToDelete = users.find(u => u.id === id);
+    if (!userToDelete) return;
+    
+    // If the user has an assigned profile, update the profile
+    if (userToDelete.assignedProfileId) {
+      const profileToUpdate = profiles.find(p => p.id === userToDelete.assignedProfileId);
+      if (profileToUpdate) {
+        const updatedProfile = { ...profileToUpdate, assignedUserId: undefined };
+        await dbProfiles.update(updatedProfile);
+        
+        setProfiles(prev => 
+          prev.map(profile => 
+            profile.id === userToDelete.assignedProfileId ? updatedProfile : profile
+          )
+        );
+      }
+    }
+    
+    // Delete the user from the database
+    const success = await dbUsers.deleteById(id);
+    if (!success) {
+      throw new Error('Failed to delete user from database');
+    }
+    
+    // Update state
+    setUsers(prev => prev.filter(user => user.id !== id));
+  };
+
   const createProfile = async (name: string) => {
     if (!currentUser?.isAdmin) {
       throw new Error('Only admins can create profiles');
@@ -209,6 +243,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     login,
     logout,
     createUser,
+    deleteUser,
     createProfile,
     deleteProfile,
     updateProfile,

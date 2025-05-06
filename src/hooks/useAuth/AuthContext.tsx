@@ -12,6 +12,7 @@ export interface AuthContextType {
   createUser: (username: string, isAdmin: boolean, profileId?: string) => Promise<User>;
   createProfile: (name: string) => Promise<CoupleProfile>;
   deleteProfile: (id: string) => Promise<void>;
+  deleteUser: (id: string) => Promise<void>;
   updateProfile: (id: string, data: Partial<CoupleProfile>) => Promise<void>;
   assignUserToProfile: (userId: string, profileId: string) => Promise<void>;
 }
