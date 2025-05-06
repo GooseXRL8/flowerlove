@@ -1,103 +1,105 @@
 
 import { client } from './client';
+import { dbUsers } from './users';
+import { dbProfiles } from './profiles';
+import { User } from '@/types/auth';
 
-// Initialize database tables if they don't exist
+// Function to ensure admin and test users exist
+const ensureDefaultUsersExist = async () => {
+  console.log("Checking if default users exist...");
+  const users = await dbUsers.getAll();
+  
+  // Check if admin user exists
+  const adminUser = users.find(u => u.username === 'joao');
+  if (!adminUser) {
+    console.log("Creating admin user 'joao'");
+    const newAdmin: User = {
+      id: 'admin-' + Date.now().toString(),
+      username: 'joao',
+      password: 'joao123',
+      isAdmin: true
+    };
+    await dbUsers.create(newAdmin);
+  } else {
+    console.log("Admin user 'joao' already exists");
+  }
+  
+  // Check if test user exists
+  const testUser = users.find(u => u.username === 'teste');
+  if (!testUser) {
+    console.log("Creating test user 'teste'");
+    
+    // Create a test profile first
+    const profileId = 'profile-' + Date.now().toString();
+    await dbProfiles.create({
+      id: profileId,
+      name: 'Perfil de Teste',
+      createdBy: 'system',
+      startDate: new Date()
+    });
+    
+    const newUser: User = {
+      id: 'user-' + Date.now().toString(),
+      username: 'teste',
+      password: 'abacate123',
+      isAdmin: false,
+      assignedProfileId: profileId
+    };
+    await dbUsers.create(newUser);
+  } else {
+    console.log("Test user 'teste' already exists");
+  }
+};
+
+// Initialize database
 export const initDatabase = async () => {
   try {
-    // Create users table
+    console.log("Initializing database...");
+    
+    // Create users table if not exists
     await client.execute(`
       CREATE TABLE IF NOT EXISTS users (
         id TEXT PRIMARY KEY,
-        username TEXT NOT NULL,
+        username TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         isAdmin INTEGER NOT NULL,
         assignedProfileId TEXT
       )
     `);
-
-    // Create profiles table
+    
+    // Create profiles table if not exists
     await client.execute(`
       CREATE TABLE IF NOT EXISTS profiles (
         id TEXT PRIMARY KEY,
         name TEXT NOT NULL,
         createdBy TEXT NOT NULL,
         startDate TEXT NOT NULL,
+        customTitle TEXT,
         assignedUserId TEXT
       )
     `);
-
-    // Create memories table
+    
+    // Create memories table if not exists
     await client.execute(`
       CREATE TABLE IF NOT EXISTS memories (
         id TEXT PRIMARY KEY,
+        profileId TEXT NOT NULL,
         title TEXT NOT NULL,
-        description TEXT NOT NULL,
+        description TEXT,
         date TEXT NOT NULL,
-        isFavorite INTEGER NOT NULL,
-        profileId TEXT NOT NULL
+        location TEXT,
+        imageUrl TEXT,
+        tags TEXT
       )
     `);
-
-    // Check if admin user exists
-    const adminResult = await client.execute({
-      sql: "SELECT * FROM users WHERE username = ?",
-      args: ["admin"]
-    });
-
-    // If no admin user exists, create default admin
-    if (adminResult.rows.length === 0) {
-      await client.execute({
-        sql: "INSERT INTO users (id, username, password, isAdmin) VALUES (?, ?, ?, ?)",
-        args: ["1", "admin", "admin123", 1]
-      });
-
-      // Create default profile
-      await client.execute({
-        sql: "INSERT INTO profiles (id, name, createdBy, startDate) VALUES (?, ?, ?, ?)",
-        args: ["1", "Casal Padrão", "1", new Date().toISOString()]
-      });
-    }
     
-    // Check if "joao" admin user exists
-    const joaoResult = await client.execute({
-      sql: "SELECT * FROM users WHERE username = ?",
-      args: ["joao"]
-    });
+    // Ensure default users exist
+    await ensureDefaultUsersExist();
     
-    // If "joao" admin user doesn't exist, create it
-    if (joaoResult.rows.length === 0) {
-      await client.execute({
-        sql: "INSERT INTO users (id, username, password, isAdmin) VALUES (?, ?, ?, ?)",
-        args: ["joao_admin", "joao", "joao123", 1]
-      });
-    }
-    
-    // Check if "teste" regular user exists
-    const testeResult = await client.execute({
-      sql: "SELECT * FROM users WHERE username = ?",
-      args: ["teste"]
-    });
-    
-    // If "teste" user doesn't exist, create it along with a profile
-    if (testeResult.rows.length === 0) {
-      // Create profile for teste user
-      const profileId = "teste_profile";
-      await client.execute({
-        sql: "INSERT INTO profiles (id, name, createdBy, startDate, assignedUserId) VALUES (?, ?, ?, ?, ?)",
-        args: [profileId, "Perfil Teste", "joao_admin", new Date().toISOString(), "teste_user"]
-      });
-      
-      // Create teste user
-      await client.execute({
-        sql: "INSERT INTO users (id, username, password, isAdmin, assignedProfileId) VALUES (?, ?, ?, ?, ?)",
-        args: ["teste_user", "teste", "abacate123", 0, profileId]
-      });
-    }
-
     console.log("Database initialized successfully");
     return true;
   } catch (error) {
-    console.error("Failed to initialize database:", error);
+    console.error("Database initialization failed:", error);
     return false;
   }
 };

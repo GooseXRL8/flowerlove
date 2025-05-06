@@ -17,9 +17,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const init = async () => {
       try {
         setLoading(true);
+        console.log("Starting database initialization...");
         const initialized = await initDatabase();
         if (initialized) {
+          console.log("Database initialized successfully, setting dbInitialized to true");
           setDbInitialized(true);
+        } else {
+          console.error("Database initialization returned false");
         }
       } catch (error) {
         console.error("Failed to initialize database:", error);
@@ -34,17 +38,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Load data from database when it's initialized
   useEffect(() => {
     const loadData = async () => {
-      if (!dbInitialized) return;
+      if (!dbInitialized) {
+        console.log("Database not initialized yet, skipping data load");
+        return;
+      }
       
       try {
+        console.log("Loading data from database...");
         setLoading(true);
         
         // Load users
         const dbLoadedUsers = await dbUsers.getAll();
+        console.log("Loaded users:", dbLoadedUsers);
         setUsers(dbLoadedUsers);
         
         // Load profiles
         const dbLoadedProfiles = await dbProfiles.getAll();
+        console.log("Loaded profiles:", dbLoadedProfiles);
         setProfiles(dbLoadedProfiles);
         
         // Load current user from localStorage (just the ID)
