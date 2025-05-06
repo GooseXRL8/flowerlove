@@ -5,4 +5,7 @@ export interface Memory {
   description: string;
   date: Date;
   isFavorite: boolean;
+  location?: string;
+  imageUrl?: string;
+  tags?: string[];
 }
