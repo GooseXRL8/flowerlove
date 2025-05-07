@@ -11,7 +11,7 @@ interface MainTabProps {
   theme: 'default' | 'purple' | 'green';
   onThemeChange: (theme: 'default' | 'purple' | 'green') => void;
   onDateChange: (date: Date) => void;
-  onTimeUpdate: (duration: any) => void;
+  onTimeUpdate: (duration: { years: number; months: number; days: number; hours: number; minutes: number; }) => void;
 }
 
 const MainTab: React.FC<MainTabProps> = ({
@@ -21,6 +21,13 @@ const MainTab: React.FC<MainTabProps> = ({
   onDateChange,
   onTimeUpdate
 }) => {
+  // Create a compatible object for FlowerAnimation from the duration
+  const relationshipDuration = {
+    years: 0,
+    months: 0,
+    days: 0
+  };
+  
   return (
     <div className="space-y-8">
       <DatePicker date={startDate} onDateChange={onDateChange} />
@@ -29,7 +36,7 @@ const MainTab: React.FC<MainTabProps> = ({
       
       <Card>
         <CardContent className="flex items-center justify-center py-6">
-          <FlowerAnimation relationshipDuration={onTimeUpdate} />
+          <FlowerAnimation relationshipDuration={relationshipDuration} />
         </CardContent>
       </Card>
       
