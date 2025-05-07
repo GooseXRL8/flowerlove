@@ -15,4 +15,5 @@ export interface CoupleProfile {
   customTitle?: string;
   assignedUserId?: string;
   generatedPassword?: string;
+  imageUrl?: string;
 }

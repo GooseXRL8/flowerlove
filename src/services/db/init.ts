@@ -35,7 +35,8 @@ const ensureDefaultUsersExist = async () => {
       id: profileId,
       name: 'Perfil de Teste',
       createdBy: 'system',
-      startDate: new Date()
+      startDate: new Date(),
+      imageUrl: '/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png'
     });
     
     const newUser: User = {
@@ -67,7 +68,7 @@ export const initDatabase = async () => {
       )
     `);
     
-    // Create profiles table if not exists
+    // Create profiles table if not exists with imageUrl field
     await client.execute(`
       CREATE TABLE IF NOT EXISTS profiles (
         id TEXT PRIMARY KEY,
@@ -75,7 +76,8 @@ export const initDatabase = async () => {
         createdBy TEXT NOT NULL,
         startDate TEXT NOT NULL,
         customTitle TEXT,
-        assignedUserId TEXT
+        assignedUserId TEXT,
+        imageUrl TEXT
       )
     `);
     

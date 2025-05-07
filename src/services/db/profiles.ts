@@ -13,7 +13,8 @@ export const dbProfiles = {
         createdBy: row.createdBy as string,
         startDate: new Date(row.startDate as string),
         customTitle: row.customTitle as string | undefined,
-        assignedUserId: row.assignedUserId as string | undefined
+        assignedUserId: row.assignedUserId as string | undefined,
+        imageUrl: row.imageUrl as string | undefined
       }));
     } catch (error) {
       console.error("Failed to get profiles:", error);
@@ -37,7 +38,8 @@ export const dbProfiles = {
         createdBy: profile.createdBy as string,
         startDate: new Date(profile.startDate as string),
         customTitle: profile.customTitle as string | undefined,
-        assignedUserId: profile.assignedUserId as string | undefined
+        assignedUserId: profile.assignedUserId as string | undefined,
+        imageUrl: profile.imageUrl as string | undefined
       };
     } catch (error) {
       console.error("Failed to get profile by ID:", error);
@@ -48,14 +50,15 @@ export const dbProfiles = {
   create: async (profile: CoupleProfile): Promise<boolean> => {
     try {
       await client.execute({
-        sql: "INSERT INTO profiles (id, name, createdBy, startDate, customTitle, assignedUserId) VALUES (?, ?, ?, ?, ?, ?)",
+        sql: "INSERT INTO profiles (id, name, createdBy, startDate, customTitle, assignedUserId, imageUrl) VALUES (?, ?, ?, ?, ?, ?, ?)",
         args: [
           profile.id,
           profile.name,
           profile.createdBy,
           profile.startDate.toISOString(),
           profile.customTitle || null,
-          profile.assignedUserId || null
+          profile.assignedUserId || null,
+          profile.imageUrl || '/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png'
         ]
       });
       return true;
@@ -69,13 +72,14 @@ export const dbProfiles = {
     try {
       console.log("Updating profile:", profile);
       await client.execute({
-        sql: "UPDATE profiles SET name = ?, createdBy = ?, startDate = ?, customTitle = ?, assignedUserId = ? WHERE id = ?",
+        sql: "UPDATE profiles SET name = ?, createdBy = ?, startDate = ?, customTitle = ?, assignedUserId = ?, imageUrl = ? WHERE id = ?",
         args: [
           profile.name,
           profile.createdBy,
           profile.startDate.toISOString(),
           profile.customTitle || null,
           profile.assignedUserId || null,
+          profile.imageUrl || null,
           profile.id
         ]
       });

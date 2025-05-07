@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Memory } from '@/components/Memory/types';
 import { dbMemories } from '@/services/database';
 import { toast } from '@/hooks/use-toast';
+import { v4 as uuidv4 } from 'uuid';
 
 export function useMemories(profileId: string | undefined, startDate: Date) {
   const [memories, setMemories] = useState<Memory[]>([]);
@@ -15,78 +16,50 @@ export function useMemories(profileId: string | undefined, startDate: Date) {
       
       try {
         setLoading(true);
+        console.log("Loading memories for profileId:", profileId);
         const loadedMemories = await dbMemories.getByProfileId(profileId);
+        console.log("Loaded memories:", loadedMemories);
         
-        if (loadedMemories.length > 0) {
-          setMemories(loadedMemories);
-        } else {
-          // If no memories in database, initialize with defaults
-          initializeDefaultMemories();
-        }
+        setMemories(loadedMemories);
       } catch (error) {
         console.error("Failed to load memories from database:", error);
-        // If there's an error loading, initialize with default memories
-        initializeDefaultMemories();
+        toast({
+          title: "Erro ao carregar",
+          description: "Não foi possível carregar suas memórias.",
+          variant: "destructive"
+        });
       } finally {
         setLoading(false);
       }
     };
     
     loadMemories();
-  }, [profileId, startDate]);
-
-  // Function to initialize default memories
-  const initializeDefaultMemories = async () => {
-    if (!profileId) return;
-    
-    const defaultMemories = [
-      {
-        id: '1',
-        title: "Primeiro Encontro",
-        description: "O dia em que nos conhecemos pessoalmente pela primeira vez.",
-        date: new Date(startDate.getTime()),
-        isFavorite: false,
-      },
-      {
-        id: '2',
-        title: "Primeira Viagem Juntos",
-        description: "Nossa primeira aventura viajando juntos.",
-        date: new Date(startDate.getTime() + 60 * 24 * 60 * 60 * 1000), // 60 days after start
-        isFavorite: false,
-      }
-    ];
-    
-    try {
-      // Save default memories to database
-      for (const memory of defaultMemories) {
-        await dbMemories.create(memory, profileId);
-      }
-      
-      setMemories(defaultMemories);
-    } catch (error) {
-      console.error("Failed to save default memories to database:", error);
-      toast({
-        title: "Erro ao salvar",
-        description: "Não foi possível salvar suas memórias.",
-      });
-    }
-  };
+  }, [profileId]);
 
   // Function to handle adding new memory
   const handleAddMemory = async (data: any) => {
-    if (!profileId) return;
+    if (!profileId) {
+      console.error("No profileId provided");
+      return;
+    }
     
     const newMemory: Memory = {
-      id: Date.now().toString(),
+      id: uuidv4(),
       title: data.title,
       description: data.description,
       date: new Date(data.date),
       isFavorite: false,
     };
     
+    console.log("Adding new memory:", newMemory, "for profileId:", profileId);
+    
     try {
       // Save to database
-      await dbMemories.create(newMemory, profileId);
+      const success = await dbMemories.create(newMemory, profileId);
+      
+      if (!success) {
+        throw new Error("Failed to save memory to database");
+      }
       
       // Update state
       setMemories(prev => [...prev, newMemory]);
@@ -113,7 +86,11 @@ export function useMemories(profileId: string | undefined, startDate: Date) {
     
     try {
       // Update in database
-      await dbMemories.update(updatedMemory, profileId);
+      const success = await dbMemories.update(updatedMemory, profileId);
+      
+      if (!success) {
+        throw new Error("Failed to update memory in database");
+      }
       
       // Update state
       const updatedMemories = memories.map((item) => 
@@ -138,11 +115,17 @@ export function useMemories(profileId: string | undefined, startDate: Date) {
   
   // Function to delete a memory
   const handleDeleteMemory = async (memoryToDelete: Memory) => {
-    if (!profileId) return;
+    if (!profileId) return false;
+    
+    console.log("Deleting memory:", memoryToDelete.id, "from profileId:", profileId);
     
     try {
       // Delete from database
-      await dbMemories.deleteById(memoryToDelete.id, profileId);
+      const success = await dbMemories.deleteById(memoryToDelete.id, profileId);
+      
+      if (!success) {
+        throw new Error("Failed to delete memory from database");
+      }
       
       // Update state
       setMemories(prev => prev.filter(memory => memory.id !== memoryToDelete.id));
