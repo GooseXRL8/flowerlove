@@ -20,7 +20,7 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
   });
 
   const [anniversaryName, setAnniversaryName] = useState<string>("Namoro");
-  const [mainImageUrl, setMainImageUrl] = useState<string>("/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png");
+  const [mainImageUrl, setMainImageUrl] = useState<string>("/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png");
 
   useEffect(() => {
     // Get saved image URL from localStorage
@@ -118,7 +118,7 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
               onError={(e) => {
                 // If image fails to load, revert to default
                 const target = e.target as HTMLImageElement;
-                target.src = "/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png";
+                target.src = "/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png";
               }}
             />
           </AspectRatio>
