@@ -58,7 +58,7 @@ export const dbProfiles = {
           profile.startDate.toISOString(),
           profile.customTitle || null,
           profile.assignedUserId || null,
-          profile.imageUrl || '/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png'
+          profile.imageUrl || '/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png'
         ]
       });
       return true;

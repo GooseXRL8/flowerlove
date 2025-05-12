@@ -21,18 +21,31 @@ const MainTab: React.FC<MainTabProps> = ({
   onDateChange,
   onTimeUpdate
 }) => {
-  // Create a compatible object for FlowerAnimation from the duration
-  const relationshipDuration = {
+  // Initialize relationship duration state
+  const [relationshipDuration, setRelationshipDuration] = React.useState({
     years: 0,
     months: 0,
     days: 0
+  });
+  
+  // Update relationship duration when time updates
+  const handleTimeUpdate = (duration: { years: number; months: number; days: number; hours: number; minutes: number; }) => {
+    // Update the parent component
+    onTimeUpdate(duration);
+    
+    // Update local state for FlowerAnimation
+    setRelationshipDuration({
+      years: duration.years,
+      months: duration.months,
+      days: duration.days
+    });
   };
   
   return (
     <div className="space-y-8">
       <DatePicker date={startDate} onDateChange={onDateChange} />
       
-      <TimeCounter startDate={startDate} onTimeUpdate={onTimeUpdate} />
+      <TimeCounter startDate={startDate} onTimeUpdate={handleTimeUpdate} />
       
       <Card>
         <CardContent className="flex items-center justify-center py-6">

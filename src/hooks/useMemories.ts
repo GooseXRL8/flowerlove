@@ -4,142 +4,130 @@ import { Memory } from '@/components/Memory/types';
 import { dbMemories } from '@/services/database';
 import { toast } from '@/hooks/use-toast';
 import { v4 as uuidv4 } from 'uuid';
+import { MemoryFormValues } from '@/components/Memory/MemoryForm';
 
-export function useMemories(profileId: string | undefined, startDate: Date) {
+export const useMemories = (profileId?: string, startDate?: Date) => {
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Load memories from database on component mount
+  // Load memories from database
   useEffect(() => {
     const loadMemories = async () => {
-      if (!profileId) return;
-      
+      if (!profileId) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        setLoading(true);
-        console.log("Loading memories for profileId:", profileId);
         const loadedMemories = await dbMemories.getByProfileId(profileId);
         console.log("Loaded memories:", loadedMemories);
-        
         setMemories(loadedMemories);
       } catch (error) {
-        console.error("Failed to load memories from database:", error);
+        console.error("Failed to load memories:", error);
         toast({
-          title: "Erro ao carregar",
-          description: "Não foi possível carregar suas memórias.",
+          title: "Erro",
+          description: "Falha ao carregar memórias.",
           variant: "destructive"
         });
       } finally {
         setLoading(false);
       }
     };
-    
+
     loadMemories();
   }, [profileId]);
 
-  // Function to handle adding new memory
-  const handleAddMemory = async (data: any) => {
+  // Add new memory
+  const handleAddMemory = async (data: MemoryFormValues) => {
     if (!profileId) {
-      console.error("No profileId provided");
+      toast({
+        title: "Erro",
+        description: "Nenhum perfil selecionado.",
+        variant: "destructive"
+      });
       return;
     }
-    
-    const newMemory: Memory = {
-      id: uuidv4(),
-      title: data.title,
-      description: data.description,
-      date: new Date(data.date),
-      isFavorite: false,
-    };
-    
-    console.log("Adding new memory:", newMemory, "for profileId:", profileId);
-    
+
     try {
+      // Create new memory object
+      const newMemory: Memory = {
+        id: uuidv4(),
+        title: data.title,
+        description: data.description,
+        date: new Date(data.date),
+        isFavorite: false
+      };
+
       // Save to database
+      console.log("Saving memory to profile:", profileId);
       const success = await dbMemories.create(newMemory, profileId);
       
-      if (!success) {
-        throw new Error("Failed to save memory to database");
+      if (success) {
+        // Update local state
+        setMemories(prev => [...prev, newMemory]);
+        toast({
+          title: "Memória adicionada",
+          description: "Sua memória foi salva com sucesso."
+        });
+      } else {
+        throw new Error("Failed to save memory");
       }
-      
-      // Update state
-      setMemories(prev => [...prev, newMemory]);
-      
-      toast({
-        title: "Memória adicionada",
-        description: `"${data.title}" foi adicionada às suas memórias.`,
-      });
     } catch (error) {
-      console.error("Failed to save memory to database:", error);
+      console.error("Error adding memory:", error);
       toast({
-        title: "Erro ao salvar",
+        title: "Erro",
         description: "Não foi possível salvar a memória.",
         variant: "destructive"
       });
     }
   };
-  
-  // Function to toggle favorite status of a memory
+
+  // Toggle favorite status
   const handleToggleFavorite = async (memory: Memory) => {
-    if (!profileId) return;
-    
-    const updatedMemory = { ...memory, isFavorite: !memory.isFavorite };
-    
+    if (!profileId) return false;
+
     try {
-      // Update in database
+      const updatedMemory = { ...memory, isFavorite: !memory.isFavorite };
       const success = await dbMemories.update(updatedMemory, profileId);
       
-      if (!success) {
-        throw new Error("Failed to update memory in database");
+      if (success) {
+        setMemories(prev => 
+          prev.map(m => m.id === memory.id ? updatedMemory : m)
+        );
+        return true;
       }
-      
-      // Update state
-      const updatedMemories = memories.map((item) => 
-        item.id === memory.id ? updatedMemory : item
-      );
-      
-      setMemories(updatedMemories);
-      
-      toast({
-        title: updatedMemory.isFavorite ? "Memória favoritada" : "Memória desfavoritada",
-        description: `"${updatedMemory.title}" foi ${updatedMemory.isFavorite ? 'adicionada aos' : 'removida dos'} favoritos.`,
-      });
+      return false;
     } catch (error) {
-      console.error("Failed to update memory in database:", error);
+      console.error("Failed to update memory:", error);
       toast({
-        title: "Erro ao atualizar",
+        title: "Erro",
         description: "Não foi possível atualizar a memória.",
         variant: "destructive"
       });
+      return false;
     }
   };
-  
-  // Function to delete a memory
-  const handleDeleteMemory = async (memoryToDelete: Memory) => {
+
+  // Delete memory
+  const handleDeleteMemory = async (memory: Memory) => {
     if (!profileId) return false;
-    
-    console.log("Deleting memory:", memoryToDelete.id, "from profileId:", profileId);
-    
+
     try {
-      // Delete from database
-      const success = await dbMemories.deleteById(memoryToDelete.id, profileId);
+      const success = await dbMemories.deleteById(memory.id, profileId);
       
-      if (!success) {
-        throw new Error("Failed to delete memory from database");
+      if (success) {
+        setMemories(prev => prev.filter(m => m.id !== memory.id));
+        toast({
+          title: "Memória excluída",
+          description: "A memória foi excluída com sucesso."
+        });
+        return true;
       }
-      
-      // Update state
-      setMemories(prev => prev.filter(memory => memory.id !== memoryToDelete.id));
-      
-      toast({
-        title: "Memória excluída",
-        description: `"${memoryToDelete.title}" foi removida das suas memórias.`,
-      });
-      
-      return true;
+      return false;
     } catch (error) {
-      console.error("Failed to delete memory from database:", error);
+      console.error("Failed to delete memory:", error);
       toast({
-        title: "Erro ao excluir",
+        title: "Erro",
         description: "Não foi possível excluir a memória.",
         variant: "destructive"
       });
@@ -154,4 +142,4 @@ export function useMemories(profileId: string | undefined, startDate: Date) {
     handleToggleFavorite,
     handleDeleteMemory
   };
-}
+};

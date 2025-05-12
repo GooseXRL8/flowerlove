@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { getWeddingAnniversaryName } from '@/utils/weddingAnniversary';
+import { useParams } from 'react-router-dom';
 
 interface TimeCounterProps {
   startDate: Date;
@@ -10,6 +10,7 @@ interface TimeCounterProps {
 }
 
 const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) => {
+  const { profileId } = useParams<{ profileId: string }>();
   const [timeElapsed, setTimeElapsed] = useState({
     years: 0,
     months: 0,
@@ -22,13 +23,15 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
   const [anniversaryName, setAnniversaryName] = useState<string>("Namoro");
   const [mainImageUrl, setMainImageUrl] = useState<string>("/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png");
 
+  // Load profile-specific image from localStorage using profileId as key
   useEffect(() => {
-    // Get saved image URL from localStorage
-    const savedImageUrl = localStorage.getItem('mainImageUrl');
-    if (savedImageUrl) {
-      setMainImageUrl(savedImageUrl);
+    if (profileId) {
+      const savedImageUrl = localStorage.getItem(`mainImageUrl_${profileId}`);
+      if (savedImageUrl) {
+        setMainImageUrl(savedImageUrl);
+      }
     }
-  }, []);
+  }, [profileId]);
 
   useEffect(() => {
     const calculateTimeElapsed = () => {
@@ -95,16 +98,16 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
 
   // Listen for storage events to update the image when changed from settings
   useEffect(() => {
-    const handleStorageChange = () => {
-      const savedImageUrl = localStorage.getItem('mainImageUrl');
-      if (savedImageUrl) {
-        setMainImageUrl(savedImageUrl);
+    const handleStorageChange = (event: StorageEvent) => {
+      // Only update if the changed key is relevant to this profile
+      if (profileId && event.key === `mainImageUrl_${profileId}`) {
+        setMainImageUrl(event.newValue || mainImageUrl);
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  }, [profileId, mainImageUrl]);
   
   return (
     <Card className="w-full max-w-md mx-auto shadow-lg border-2 border-primary/20 bg-gradient-to-b from-background to-accent/50 overflow-hidden">

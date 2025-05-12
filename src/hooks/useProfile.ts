@@ -20,7 +20,7 @@ export function useProfile() {
   const [appTitle, setAppTitle] = useState<string>("Nosso Amor");
   
   // State for the main image URL
-  const [mainImageUrl, setMainImageUrl] = useState<string>("/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png");
+  const [mainImageUrl, setMainImageUrl] = useState<string>("/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png");
   
   // State for relationship start date
   const [startDate, setStartDate] = useState<Date>(new Date(2024, 8, 7)); // Note: Month is 0-indexed, so 8 = September
@@ -50,10 +50,13 @@ export function useProfile() {
     if (profile.imageUrl) setMainImageUrl(profile.imageUrl);
     
     // Also load data from localStorage as fallback
-    const savedTitle = localStorage.getItem('appTitle');
+    const savedTitle = localStorage.getItem(`appTitle_${profileId}`);
     if (!profile.customTitle && savedTitle) setAppTitle(savedTitle);
     
-    const savedTheme = localStorage.getItem('theme') as Theme;
+    const savedImageUrl = localStorage.getItem(`mainImageUrl_${profileId}`);
+    if (!profile.imageUrl && savedImageUrl) setMainImageUrl(savedImageUrl);
+    
+    const savedTheme = localStorage.getItem(`theme_${profileId}`) as Theme;
     if (savedTheme) setTheme(savedTheme);
   }, [profileId, profiles]);
   
@@ -67,7 +70,9 @@ export function useProfile() {
   // Handle theme change
   const handleThemeChange = (newTheme: Theme) => {
     setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
+    if (profileId) {
+      localStorage.setItem(`theme_${profileId}`, newTheme);
+    }
     toast({
       title: "Tema alterado",
       description: `O tema foi alterado para ${getThemeName(newTheme)}.`,
@@ -77,7 +82,11 @@ export function useProfile() {
   // Handle title change
   const handleTitleChange = async (newTitle: string) => {
     setAppTitle(newTitle);
-    localStorage.setItem('appTitle', newTitle);
+    
+    // Save to localStorage with profile-specific key
+    if (profileId) {
+      localStorage.setItem(`appTitle_${profileId}`, newTitle);
+    }
     
     // Save to database if we have a profile ID
     if (profileId) {
@@ -101,7 +110,6 @@ export function useProfile() {
   // Handle date change
   const handleDateChange = async (newDate: Date) => {
     setStartDate(newDate);
-    localStorage.setItem('startDate', newDate.toISOString());
     
     // Save to database if we have a profile ID
     if (profileId) {
@@ -125,7 +133,18 @@ export function useProfile() {
   // Handle image change
   const handleImageChange = async (newImageUrl: string) => {
     setMainImageUrl(newImageUrl);
-    localStorage.setItem('mainImageUrl', newImageUrl);
+    
+    // Save to localStorage with profile-specific key
+    if (profileId) {
+      localStorage.setItem(`mainImageUrl_${profileId}`, newImageUrl);
+      
+      // Trigger storage event for other tabs
+      const event = new StorageEvent('storage', {
+        key: `mainImageUrl_${profileId}`,
+        newValue: newImageUrl
+      });
+      window.dispatchEvent(event);
+    }
     
     // Save to database if we have a profile ID
     if (profileId) {
