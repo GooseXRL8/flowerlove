@@ -68,18 +68,32 @@ const Login = () => {
   }
   
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
-            Nosso Amor
-          </CardTitle>
-          <CardDescription>Faça login para acessar o seu perfil</CardDescription>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Romantic background elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-16 left-16 w-8 h-8 text-secondary/20 animate-float">🌹</div>
+        <div className="absolute top-32 right-20 w-6 h-6 text-secondary/30 animate-pulse-soft">💕</div>
+        <div className="absolute bottom-40 left-12 w-7 h-7 text-secondary/25 animate-heart-beat">🌸</div>
+        <div className="absolute bottom-20 right-16 w-5 h-5 text-secondary/30 animate-float">💖</div>
+      </div>
+      
+      <Card className="w-full max-w-md shadow-romantic hover:shadow-lg transition-all duration-500 animate-fade-in">
+        <CardHeader className="text-center pb-8">
+          <div className="mb-4">
+            <div className="text-6xl animate-heart-beat mb-4">💕</div>
+            <CardTitle className="text-4xl font-romantic font-bold bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent">
+              FlowerLove
+            </CardTitle>
+          </div>
+          <CardDescription className="text-base font-body text-muted-foreground">
+            Entre na sua conta e acompanhe sua jornada de amor
+          </CardDescription>
         </CardHeader>
+        
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <label htmlFor="username" className="text-sm font-medium">
+          <CardContent className="space-y-6 px-8">
+            <div className="space-y-3">
+              <label htmlFor="username" className="text-sm font-medium text-foreground">
                 Nome de usuário
               </label>
               <Input
@@ -89,10 +103,12 @@ const Login = () => {
                 onChange={(e) => setUsername(e.target.value)}
                 disabled={isLoggingIn}
                 required
+                className="h-12 rounded-lg border-2 border-border focus:border-primary/50 transition-all duration-300"
+                placeholder="Digite seu nome de usuário"
               />
             </div>
-            <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+            <div className="space-y-3">
+              <label htmlFor="password" className="text-sm font-medium text-foreground">
                 Senha
               </label>
               <Input
@@ -102,12 +118,31 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
                 disabled={isLoggingIn}
                 required
+                className="h-12 rounded-lg border-2 border-border focus:border-primary/50 transition-all duration-300"
+                placeholder="Digite sua senha"
               />
             </div>
           </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full" disabled={isLoggingIn}>
-              {isLoggingIn ? 'Entrando...' : 'Entrar'}
+          
+          <CardFooter className="pt-6 px-8 pb-8">
+            <Button 
+              type="submit" 
+              variant="romantic"
+              className="w-full h-12 text-base font-medium" 
+              disabled={isLoggingIn}
+            >
+              {isLoggingIn ? (
+                <div className="flex items-center gap-2">
+                  <div className="animate-spin h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full"></div>
+                  Entrando...
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span>💖</span>
+                  Entrar
+                  <span>💖</span>
+                </div>
+              )}
             </Button>
           </CardFooter>
         </form>

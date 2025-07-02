@@ -110,32 +110,39 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
   }, [profileId, mainImageUrl]);
   
   return (
-    <Card className="w-full max-w-md mx-auto shadow-lg border-2 border-primary/20 bg-gradient-to-b from-background to-accent/50 overflow-hidden">
+    <Card className="w-full max-w-md mx-auto shadow-romantic border-2 border-primary/20 overflow-hidden animate-fade-in">
       <CardContent className="p-0">
-        <div className="w-full">
-          <AspectRatio ratio={16/12} className="bg-accent/20">
+        <div className="w-full relative">
+          <AspectRatio ratio={16/12} className="bg-secondary/20">
             <img 
               src={mainImageUrl} 
               alt="Couple photo" 
-              className="w-full h-full object-cover rounded-t-lg"
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
               onError={(e) => {
                 // If image fails to load, revert to default
                 const target = e.target as HTMLImageElement;
-                target.src = "/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png";
+                target.src = "/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png";
               }}
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
           </AspectRatio>
         </div>
         
-        <div className="py-6 px-4">
-          <h2 className="text-center font-medium text-lg mb-4 text-foreground">Tempo de Relacionamento</h2>
+        <div className="py-8 px-6 bg-gradient-to-b from-card to-secondary/10">
+          <h2 className="text-center font-romantic text-2xl mb-6 text-primary animate-pulse-soft">
+            💕 Tempo de Relacionamento 💕
+          </h2>
           
-          <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+          <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
             <TimeUnit value={timeElapsed.years} unit="Anos" />
             <TimeUnit value={timeElapsed.months} unit="Meses" />
             <TimeUnit value={timeElapsed.days} unit="Dias" />
             <TimeUnit value={timeElapsed.hours} unit="Horas" />
             <TimeUnit value={timeElapsed.minutes} unit="Minutos" />
+          </div>
+          
+          <div className="text-center mt-6">
+            <p className="text-lg font-romantic text-primary/80">{anniversaryName}</p>
           </div>
         </div>
       </CardContent>
@@ -149,9 +156,9 @@ interface TimeUnitProps {
 }
 
 const TimeUnit: React.FC<TimeUnitProps> = ({ value, unit }) => (
-  <div className="flex flex-col items-center p-2">
-    <div className="text-xl sm:text-2xl font-bold text-primary">{value}</div>
-    <div className="text-xs sm:text-sm text-muted-foreground">{unit}</div>
+  <div className="flex flex-col items-center p-3 bg-secondary/30 rounded-xl shadow-soft hover:shadow-card transition-all duration-300 hover:scale-105 animate-float">
+    <div className="text-xl sm:text-3xl font-bold text-primary animate-heart-beat">{value}</div>
+    <div className="text-xs sm:text-sm text-muted-foreground font-medium">{unit}</div>
   </div>
 );
 
