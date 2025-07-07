@@ -5,6 +5,9 @@ import TimeCounter from '../TimeCounter';
 import FlowerAnimation from '../FlowerAnimation';
 import ThemeSwitcher from '../ThemeSwitcher';
 import DatePicker from '../DatePicker';
+import InstagramShareButton from '../InstagramShareButton';
+import { formatRelationshipTime } from '@/utils/timeFormatter';
+import { useParams } from 'react-router-dom';
 
 interface MainTabProps {
   startDate: Date;
@@ -12,6 +15,7 @@ interface MainTabProps {
   onThemeChange: (theme: 'default' | 'purple' | 'green') => void;
   onDateChange: (date: Date) => void;
   onTimeUpdate: (duration: { years: number; months: number; days: number; hours: number; minutes: number; }) => void;
+  appTitle: string;
 }
 
 const MainTab: React.FC<MainTabProps> = ({
@@ -19,14 +23,28 @@ const MainTab: React.FC<MainTabProps> = ({
   theme,
   onThemeChange,
   onDateChange,
-  onTimeUpdate
+  onTimeUpdate,
+  appTitle
 }) => {
+  const { profileId } = useParams<{ profileId: string }>();
   // Initialize relationship duration state
   const [relationshipDuration, setRelationshipDuration] = React.useState({
     years: 0,
     months: 0,
     days: 0
   });
+
+  // Get the main image URL from localStorage
+  const [mainImageUrl, setMainImageUrl] = React.useState<string>("/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png");
+
+  React.useEffect(() => {
+    if (profileId) {
+      const savedImageUrl = localStorage.getItem(`mainImageUrl_${profileId}`);
+      if (savedImageUrl) {
+        setMainImageUrl(savedImageUrl);
+      }
+    }
+  }, [profileId]);
   
   // Update relationship duration when time updates
   const handleTimeUpdate = (duration: { years: number; months: number; days: number; hours: number; minutes: number; }) => {
@@ -54,6 +72,16 @@ const MainTab: React.FC<MainTabProps> = ({
       </Card>
       
       <ThemeSwitcher currentTheme={theme} onThemeChange={onThemeChange} />
+      
+      <Card>
+        <CardContent className="p-6">
+          <InstagramShareButton
+            coupleImageUrl={mainImageUrl}
+            timeText={formatRelationshipTime(relationshipDuration)}
+            appTitle={appTitle}
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 };

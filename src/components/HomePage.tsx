@@ -53,6 +53,7 @@ const HomePage: React.FC = () => {
               onThemeChange={handleThemeChange}
               onDateChange={handleDateChange}
               onTimeUpdate={setDuration}
+              appTitle={appTitle}
             />
           </TabsContent>
           
