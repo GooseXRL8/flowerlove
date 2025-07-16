@@ -38,7 +38,7 @@ export function useAuthOperations(
   const createUser = async (username: string, isAdmin: boolean, profileId?: string) => {
     const password = generatePassword();
     const newUser: User = {
-      id: Date.now().toString(),
+      id: '', // Let Supabase generate UUID - this will be ignored
       username,
       password,
       isAdmin,
@@ -50,7 +50,10 @@ export function useAuthOperations(
       throw new Error('Failed to create user in database');
     }
     
-    setUsers(prev => [...prev, newUser]);
+    // Reload users to get the new user with proper UUID
+    const updatedUsers = await dbUsers.getAll();
+    setUsers(updatedUsers);
+    
     return newUser;
   };
 
@@ -94,14 +97,21 @@ export function useAuthOperations(
     }
     
     const newProfile: CoupleProfile = {
-      id: Date.now().toString(),
+      id: '', // Let Supabase generate UUID - this will be ignored
       name,
       createdBy: currentUser.id,
       startDate: new Date(),
     };
     
-    await dbProfiles.create(newProfile);
-    setProfiles(prev => [...prev, newProfile]);
+    const success = await dbProfiles.create(newProfile);
+    if (!success) {
+      throw new Error('Failed to create profile in database');
+    }
+    
+    // Reload profiles to get the new profile with proper UUID
+    const updatedProfiles = await dbProfiles.getAll();
+    setProfiles(updatedProfiles);
+    
     return newProfile;
   };
 
