@@ -1,8 +1,12 @@
 
-// Re-export database services for backward compatibility
-import { initDatabase } from './db/init';
-import { dbUsers } from './db/users';
-import { dbProfiles } from './db/profiles';
-import { dbMemories } from './db/memories';
+// Updated to use Supabase services
+import { initSupabase } from './supabase/init';
+import { supabaseUsers } from './supabase/users';
+import { supabaseProfiles } from './supabase/profiles';
+import { supabaseMemories } from './supabase/memories';
 
-export { initDatabase, dbUsers, dbProfiles, dbMemories };
+// Export Supabase services with legacy names for compatibility
+export const initDatabase = initSupabase;
+export const dbUsers = supabaseUsers;
+export const dbProfiles = supabaseProfiles;
+export const dbMemories = supabaseMemories;
