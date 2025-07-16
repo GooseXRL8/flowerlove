@@ -33,7 +33,7 @@ export const supabaseMemories = {
       const { error } = await supabase
         .from('memories')
         .insert({
-          id: memory.id,
+          // Remove id from insert - let Supabase generate UUID
           profile_id: profileId,
           title: memory.title,
           description: memory.description,

@@ -51,7 +51,7 @@ export const supabaseUsers = {
       const { error } = await supabase
         .from('users')
         .insert({
-          id: user.id,
+          // Remove id from insert - let Supabase generate UUID
           username: user.username,
           password: user.password,
           is_admin: user.isAdmin,

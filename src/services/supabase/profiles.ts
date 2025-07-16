@@ -55,7 +55,7 @@ export const supabaseProfiles = {
       const { error } = await supabase
         .from('profiles')
         .insert({
-          id: profile.id,
+          // Remove id from insert - let Supabase generate UUID
           name: profile.name,
           created_by: profile.createdBy,
           start_date: profile.startDate.toISOString().split('T')[0],
