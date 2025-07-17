@@ -20,8 +20,14 @@ export const useMemories = (profileId?: string, startDate?: Date) => {
 
       try {
         const loadedMemories = await dbMemories.getByProfileId(profileId);
-        console.log("Loaded memories:", loadedMemories);
-        setMemories(loadedMemories);
+        // Sort memories: favorites first, then by creation date
+        const sortedMemories = loadedMemories.sort((a, b) => {
+          if (a.isFavorite && !b.isFavorite) return -1;
+          if (!a.isFavorite && b.isFavorite) return 1;
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
+        console.log("Loaded memories:", sortedMemories);
+        setMemories(sortedMemories);
       } catch (error) {
         console.error("Failed to load memories:", error);
         toast({
@@ -63,8 +69,15 @@ export const useMemories = (profileId?: string, startDate?: Date) => {
       const success = await dbMemories.create(newMemory, profileId);
       
       if (success) {
-        // Update local state
-        setMemories(prev => [...prev, newMemory]);
+        // Update local state with proper sorting
+        setMemories(prev => {
+          const updated = [...prev, newMemory];
+          return updated.sort((a, b) => {
+            if (a.isFavorite && !b.isFavorite) return -1;
+            if (!a.isFavorite && b.isFavorite) return 1;
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
+          });
+        });
         toast({
           title: "Memória adicionada",
           description: "Sua memória foi salva com sucesso."
@@ -91,9 +104,14 @@ export const useMemories = (profileId?: string, startDate?: Date) => {
       const success = await dbMemories.update(updatedMemory, profileId);
       
       if (success) {
-        setMemories(prev => 
-          prev.map(m => m.id === memory.id ? updatedMemory : m)
-        );
+        setMemories(prev => {
+          const updated = prev.map(m => m.id === memory.id ? updatedMemory : m);
+          return updated.sort((a, b) => {
+            if (a.isFavorite && !b.isFavorite) return -1;
+            if (!a.isFavorite && b.isFavorite) return 1;
+            return new Date(b.date).getTime() - new Date(a.date).getTime();
+          });
+        });
         return true;
       }
       return false;

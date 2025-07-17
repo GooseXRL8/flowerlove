@@ -68,7 +68,8 @@ const MemorialsTab: React.FC<MemorialsTabProps> = ({ startDate }) => {
           <MemoryCard 
             key={memory.id} 
             memory={memory} 
-            onRememberClick={handleRememberClick} 
+            onRememberClick={handleRememberClick}
+            onToggleFavorite={handleToggleFavorite}
           />
         ))
       )}

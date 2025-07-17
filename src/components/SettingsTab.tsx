@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
+import ProfilePhotosGallery from "@/components/ProfilePhotosGallery";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface SettingsTabProps {
   title: string;
@@ -33,6 +35,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
 }) => {
   const [newTitle, setNewTitle] = useState(title);
   const [imageUrl, setImageUrl] = useState("");
+  const { currentUser } = useAuth();
 
   const handleTitleSave = () => {
     if (newTitle.trim()) {
@@ -142,6 +145,14 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
           </Button>
         </CardContent>
       </Card>
+
+      {/* Profile Photos Gallery */}
+      {currentUser && (
+        <ProfilePhotosGallery 
+          userId={currentUser.id} 
+          className="w-full"
+        />
+      )}
     </div>
   );
 };
