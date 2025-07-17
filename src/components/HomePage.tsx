@@ -12,6 +12,7 @@ const HomePage: React.FC = () => {
     theme,
     activeTab,
     appTitle,
+    mainImageUrl,
     startDate,
     duration,
     setActiveTab,
@@ -54,6 +55,7 @@ const HomePage: React.FC = () => {
               onDateChange={handleDateChange}
               onTimeUpdate={setDuration}
               appTitle={appTitle}
+              mainImageUrl={mainImageUrl}
             />
           </TabsContent>
           

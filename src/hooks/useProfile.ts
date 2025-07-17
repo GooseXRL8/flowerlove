@@ -1,14 +1,14 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth/AuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { toast } from '@/hooks/use-toast';
 
 type Theme = 'default' | 'purple' | 'green';
 
 export function useProfile() {
   const { profileId } = useParams<{ profileId: string }>();
-  const { profiles, updateProfile } = useAuth();
+  const { profiles, updateProfile, currentUser } = useAuth();
   
   // State for theme
   const [theme, setTheme] = useState<Theme>('default');
@@ -49,13 +49,7 @@ export function useProfile() {
     if (profile.startDate) setStartDate(profile.startDate);
     if (profile.imageUrl) setMainImageUrl(profile.imageUrl);
     
-    // Also load data from localStorage as fallback
-    const savedTitle = localStorage.getItem(`appTitle_${profileId}`);
-    if (!profile.customTitle && savedTitle) setAppTitle(savedTitle);
-    
-    const savedImageUrl = localStorage.getItem(`mainImageUrl_${profileId}`);
-    if (!profile.imageUrl && savedImageUrl) setMainImageUrl(savedImageUrl);
-    
+    // Load theme from localStorage as it's user-specific
     const savedTheme = localStorage.getItem(`theme_${profileId}`) as Theme;
     if (savedTheme) setTheme(savedTheme);
   }, [profileId, profiles]);
@@ -82,11 +76,6 @@ export function useProfile() {
   // Handle title change
   const handleTitleChange = async (newTitle: string) => {
     setAppTitle(newTitle);
-    
-    // Save to localStorage with profile-specific key
-    if (profileId) {
-      localStorage.setItem(`appTitle_${profileId}`, newTitle);
-    }
     
     // Save to database if we have a profile ID
     if (profileId) {
@@ -130,21 +119,9 @@ export function useProfile() {
     }
   };
   
-  // Handle image change
+  // Handle image change - now saves to database
   const handleImageChange = async (newImageUrl: string) => {
     setMainImageUrl(newImageUrl);
-    
-    // Save to localStorage with profile-specific key
-    if (profileId) {
-      localStorage.setItem(`mainImageUrl_${profileId}`, newImageUrl);
-      
-      // Trigger storage event for other tabs
-      const event = new StorageEvent('storage', {
-        key: `mainImageUrl_${profileId}`,
-        newValue: newImageUrl
-      });
-      window.dispatchEvent(event);
-    }
     
     // Save to database if we have a profile ID
     if (profileId) {
