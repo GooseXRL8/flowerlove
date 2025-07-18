@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { GlowCard } from "@/components/ui/spotlight-card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { getWeddingAnniversaryName } from '@/utils/weddingAnniversary';
 import { useParams } from 'react-router-dom';
@@ -7,9 +7,10 @@ import { useParams } from 'react-router-dom';
 interface TimeCounterProps {
   startDate: Date;
   onTimeUpdate: (duration: { years: number; months: number; days: number; hours: number; minutes: number; }) => void;
+  mainImageUrl: string;
 }
 
-const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) => {
+const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate, mainImageUrl }) => {
   const { profileId } = useParams<{ profileId: string }>();
   const [timeElapsed, setTimeElapsed] = useState({
     years: 0,
@@ -21,17 +22,6 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
   });
 
   const [anniversaryName, setAnniversaryName] = useState<string>("Namoro");
-  const [mainImageUrl, setMainImageUrl] = useState<string>("/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png");
-
-  // Load profile-specific image from localStorage using profileId as key
-  useEffect(() => {
-    if (profileId) {
-      const savedImageUrl = localStorage.getItem(`mainImageUrl_${profileId}`);
-      if (savedImageUrl) {
-        setMainImageUrl(savedImageUrl);
-      }
-    }
-  }, [profileId]);
 
   useEffect(() => {
     const calculateTimeElapsed = () => {
@@ -96,57 +86,47 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate }) =>
     return () => clearInterval(interval);
   }, [startDate, onTimeUpdate]);
 
-  // Listen for storage events to update the image when changed from settings
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      // Only update if the changed key is relevant to this profile
-      if (profileId && event.key === `mainImageUrl_${profileId}`) {
-        setMainImageUrl(event.newValue || mainImageUrl);
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, [profileId, mainImageUrl]);
   
   return (
-    <Card className="w-full max-w-md mx-auto shadow-romantic border-2 border-primary/20 overflow-hidden animate-fade-in">
-      <CardContent className="p-0">
-        <div className="w-full relative">
-          <AspectRatio ratio={16/12} className="bg-secondary/20">
-            <img 
-              src={mainImageUrl} 
-              alt="Couple photo" 
-              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-              onError={(e) => {
-                // If image fails to load, revert to default
-                const target = e.target as HTMLImageElement;
-                target.src = "/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png";
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-          </AspectRatio>
+    <GlowCard 
+      glowColor="red" 
+      customSize 
+      className="w-full max-w-md mx-auto shadow-romantic border-2 border-primary/20 overflow-hidden animate-fade-in p-0"
+    >
+      <div className="w-full relative">
+        <AspectRatio ratio={16/12} className="bg-secondary/20">
+          <img 
+            src={mainImageUrl} 
+            alt="Couple photo" 
+            className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            onError={(e) => {
+              // If image fails to load, revert to default
+              const target = e.target as HTMLImageElement;
+              target.src = "/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png";
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+        </AspectRatio>
+      </div>
+      
+      <div className="py-8 px-6 bg-gradient-to-b from-card to-secondary/10">
+        <h2 className="text-center font-romantic text-2xl mb-6 text-primary animate-pulse-soft">
+          💕 Tempo de Relacionamento 💕
+        </h2>
+        
+        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
+          <TimeUnit value={timeElapsed.years} unit="Anos" />
+          <TimeUnit value={timeElapsed.months} unit="Meses" />
+          <TimeUnit value={timeElapsed.days} unit="Dias" />
+          <TimeUnit value={timeElapsed.hours} unit="Horas" />
+          <TimeUnit value={timeElapsed.minutes} unit="Minutos" />
         </div>
         
-        <div className="py-8 px-6 bg-gradient-to-b from-card to-secondary/10">
-          <h2 className="text-center font-romantic text-2xl mb-6 text-primary animate-pulse-soft">
-            💕 Tempo de Relacionamento 💕
-          </h2>
-          
-          <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-            <TimeUnit value={timeElapsed.years} unit="Anos" />
-            <TimeUnit value={timeElapsed.months} unit="Meses" />
-            <TimeUnit value={timeElapsed.days} unit="Dias" />
-            <TimeUnit value={timeElapsed.hours} unit="Horas" />
-            <TimeUnit value={timeElapsed.minutes} unit="Minutos" />
-          </div>
-          
-          <div className="text-center mt-6">
-            <p className="text-lg font-romantic text-primary/80">{anniversaryName}</p>
-          </div>
+        <div className="text-center mt-6">
+          <p className="text-lg font-romantic text-primary/80">{anniversaryName}</p>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </GlowCard>
   );
 };
 

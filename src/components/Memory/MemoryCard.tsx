@@ -1,6 +1,6 @@
 import React from 'react';
 import { Memory } from "./types";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlowCard } from "@/components/ui/spotlight-card";
 import { Button } from "@/components/ui/button";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -26,25 +26,29 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory, onRememberClick, onTogg
   };
 
   return (
-    <Card className={cn(
-      "w-full transition-all duration-200 hover:shadow-md",
-      memory.isFavorite && "border-yellow-500 bg-yellow-50/30 dark:bg-yellow-950/30"
-    )}>
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+    <GlowCard 
+      className={cn(
+        "w-full transition-all duration-200 hover:shadow-md p-6",
+        memory.isFavorite && "border-yellow-500 bg-yellow-50/30 dark:bg-yellow-950/30"
+      )}
+      glowColor={memory.isFavorite ? "orange" : "purple"}
+      customSize
+    >
+      <div className="flex flex-row items-start justify-between space-y-0 pb-2">
         <div className="space-y-1">
-          <CardTitle className="text-lg flex items-center gap-2">
+          <h3 className="text-lg flex items-center gap-2 font-semibold">
             {memory.title}
             {memory.isFavorite && (
               <Star className="h-4 w-4 fill-yellow-500 text-yellow-500" />
             )}
-          </CardTitle>
-          <CardDescription>
+          </h3>
+          <p className="text-sm text-muted-foreground">
             {memory.date.toLocaleDateString('pt-BR', { 
               day: 'numeric', 
               month: 'long', 
               year: 'numeric' 
             })} • {timeAgo}
-          </CardDescription>
+          </p>
         </div>
         {onToggleFavorite && (
           <Button
@@ -64,8 +68,8 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory, onRememberClick, onTogg
             />
           </Button>
         )}
-      </CardHeader>
-      <CardContent>
+      </div>
+      <div className="pt-4">
         <p className="text-sm text-muted-foreground mb-4">
           {memory.description}
         </p>
@@ -78,8 +82,8 @@ const MemoryCard: React.FC<MemoryCardProps> = ({ memory, onRememberClick, onTogg
           <BookOpen className="h-4 w-4 mr-2" />
           Relembrar
         </Button>
-      </CardContent>
-    </Card>
+      </div>
+    </GlowCard>
   );
 };
 

@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlowCard } from "@/components/ui/spotlight-card";
 import { useToast } from "@/hooks/use-toast";
 
 const Login = () => {
@@ -77,21 +77,21 @@ const Login = () => {
         <div className="absolute bottom-20 right-16 w-5 h-5 text-secondary/30 animate-float">💖</div>
       </div>
       
-      <Card className="w-full max-w-md shadow-romantic hover:shadow-lg transition-all duration-500 animate-fade-in">
-        <CardHeader className="text-center pb-8">
+      <GlowCard glowColor="purple" customSize className="w-full max-w-md shadow-romantic hover:shadow-lg transition-all duration-500 animate-fade-in p-8">
+        <div className="text-center pb-8">
           <div className="mb-4">
             <div className="text-6xl animate-heart-beat mb-4">💕</div>
-            <CardTitle className="text-4xl font-romantic font-bold bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent">
+            <h1 className="text-4xl font-romantic font-bold bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent">
               FlowerLove
-            </CardTitle>
+            </h1>
           </div>
-          <CardDescription className="text-base font-body text-muted-foreground">
+          <p className="text-base font-body text-muted-foreground">
             Entre na sua conta e acompanhe sua jornada de amor
-          </CardDescription>
-        </CardHeader>
+          </p>
+        </div>
         
         <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-6 px-8">
+          <div className="space-y-6">
             <div className="space-y-3">
               <label htmlFor="username" className="text-sm font-medium text-foreground">
                 Nome de usuário
@@ -122,9 +122,9 @@ const Login = () => {
                 placeholder="Digite sua senha"
               />
             </div>
-          </CardContent>
+          </div>
           
-          <CardFooter className="pt-6 px-8 pb-8">
+          <div className="pt-6">
             <Button 
               type="submit" 
               variant="romantic"
@@ -144,9 +144,9 @@ const Login = () => {
                 </div>
               )}
             </Button>
-          </CardFooter>
+          </div>
         </form>
-      </Card>
+      </GlowCard>
     </div>
   );
 };

@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlowCard } from "@/components/ui/spotlight-card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -14,7 +14,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import ProfilePhotosGallery from "@/components/ProfilePhotosGallery";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -33,24 +33,13 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
   onDateChange,
   onImageChange
 }) => {
-  const [newTitle, setNewTitle] = useState(title);
-  const [imageUrl, setImageUrl] = useState("");
+  const [newImageUrl, setNewImageUrl] = useState("");
   const { currentUser } = useAuth();
 
-  const handleTitleSave = () => {
-    if (newTitle.trim()) {
-      onTitleChange(newTitle);
-      toast({
-        title: "Título atualizado",
-        description: "O título do aplicativo foi alterado com sucesso.",
-      });
-    }
-  };
-
-  const handleImageSave = () => {
-    if (imageUrl.trim()) {
-      onImageChange(imageUrl);
-      setImageUrl("");
+  const handleImageUpdate = () => {
+    if (newImageUrl.trim()) {
+      onImageChange(newImageUrl);
+      setNewImageUrl("");
       toast({
         title: "Imagem atualizada",
         description: "A imagem principal foi atualizada com sucesso.",
@@ -69,43 +58,36 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
         </p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Título do Aplicativo</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col space-y-2">
-            <Label htmlFor="app-title">Título</Label>
-            <Input 
-              id="app-title" 
-              value={newTitle} 
-              onChange={(e) => setNewTitle(e.target.value)}
-              placeholder="Nosso Amor"
+      <GlowCard glowColor="blue" customSize className="p-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold">Configurações do Perfil</h3>
+        </div>
+        <div className="space-y-4">
+          {/* App Title */}
+          <div className="space-y-2">
+            <Label htmlFor="title">Título do App</Label>
+            <Input
+              id="title"
+              value={title}
+              onChange={(e) => onTitleChange(e.target.value)}
+              placeholder="Digite o título do seu app"
             />
           </div>
-          <Button onClick={handleTitleSave}>Salvar Título</Button>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Data do Relacionamento</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col space-y-2">
-            <Label htmlFor="date-picker">Data de início</Label>
+          {/* Start Date */}
+          <div className="space-y-2">
+            <Label>Data de Início do Relacionamento</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
-                  variant={"outline"}
+                  variant="outline"
                   className={cn(
                     "w-full justify-start text-left font-normal",
                     !startDate && "text-muted-foreground"
                   )}
-                  id="date-picker"
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {startDate ? format(startDate, "PPP", { locale: ptBR }) : <span>Escolher data</span>}
+                  {startDate ? format(startDate, "PPP", { locale: ptBR }) : <span>Selecione uma data</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -113,38 +95,37 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                   mode="single"
                   selected={startDate}
                   onSelect={(date) => date && onDateChange(date)}
+                  disabled={(date) =>
+                    date > new Date() || date < new Date("1900-01-01")
+                  }
                   initialFocus
-                  className="p-3 pointer-events-auto"
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>
           </div>
-        </CardContent>
-      </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Imagem Principal</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex flex-col space-y-2">
-            <Label htmlFor="image-url">URL da imagem</Label>
-            <Input 
-              id="image-url" 
-              value={imageUrl} 
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://exemplo.com/sua-imagem.jpg"
-            />
-            <p className="text-xs text-muted-foreground">
-              Insira a URL completa de uma imagem online
-            </p>
+          {/* Image URL */}
+          <div className="space-y-2">
+            <Label htmlFor="imageUrl">URL da Imagem Principal</Label>
+            <div className="flex gap-2">
+              <Input
+                id="imageUrl"
+                value={newImageUrl}
+                onChange={(e) => setNewImageUrl(e.target.value)}
+                placeholder="Cole a URL da imagem aqui"
+              />
+              <Button 
+                onClick={handleImageUpdate}
+                disabled={!newImageUrl.trim()}
+                size="sm"
+              >
+                <Image className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
-          <Button onClick={handleImageSave} className="flex items-center gap-2">
-            <Image size={16} />
-            <span>Atualizar Imagem</span>
-          </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </GlowCard>
 
       {/* Profile Photos Gallery */}
       {currentUser && (

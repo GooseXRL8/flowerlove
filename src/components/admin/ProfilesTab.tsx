@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { GlowCard } from "@/components/ui/spotlight-card";
 import { Input } from "@/components/ui/input";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
@@ -62,49 +62,46 @@ export const ProfilesTab = () => {
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex justify-between items-center">
-            <span>Criar Novo Perfil</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-2">
-            <Input 
-              placeholder="Nome do perfil" 
-              value={newProfileName}
-              onChange={(e) => setNewProfileName(e.target.value)}
-            />
-            <Button onClick={handleCreateProfile}>
-              <Plus className="mr-2 h-4 w-4" />
-              Criar
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <GlowCard glowColor="blue" customSize className="p-6">
+        <div className="mb-4">
+          <h3 className="text-lg font-semibold">Criar Novo Perfil</h3>
+        </div>
+        <div className="flex gap-2">
+          <Input 
+            placeholder="Nome do perfil" 
+            value={newProfileName}
+            onChange={(e) => setNewProfileName(e.target.value)}
+          />
+          <Button onClick={handleCreateProfile}>
+            <Plus className="mr-2 h-4 w-4" />
+            Criar
+          </Button>
+        </div>
+      </GlowCard>
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {profiles.map((profile) => {
           const assignedUser = users.find(u => u.assignedProfileId === profile.id);
           
           return (
-            <Card key={profile.id} className="overflow-hidden">
-              <CardHeader className="pb-2">
-                <CardTitle>{profile.name}</CardTitle>
-              </CardHeader>
-              <CardContent className="pb-2">
+            <GlowCard key={profile.id} glowColor="green" customSize className="p-6">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold">{profile.name}</h3>
                 <p className="text-sm text-muted-foreground">
                   Criado em: {profile.startDate.toLocaleDateString()}
                 </p>
                 {assignedUser && (
-                  <p className="text-sm font-medium mt-2">
-                    Usuário: {assignedUser.username}
-                    <br />
-                    Senha: {assignedUser.password}
-                  </p>
+                  <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
+                    <p className="text-sm text-green-800 font-medium">
+                      Usuário: {assignedUser.username}
+                    </p>
+                    <p className="text-xs text-green-600">
+                      Senha: {assignedUser.password}
+                    </p>
+                  </div>
                 )}
-              </CardContent>
-              <div className="flex bg-muted/20 p-2 pt-0 gap-2 justify-end">
+              </div>
+              <div className="flex gap-2 justify-end">
                 <Button size="sm" onClick={() => handleViewProfile(profile.id)}>
                   Visualizar
                 </Button>
@@ -130,7 +127,7 @@ export const ProfilesTab = () => {
                   </AlertDialogContent>
                 </AlertDialog>
               </div>
-            </Card>
+            </GlowCard>
           );
         })}
       </div>

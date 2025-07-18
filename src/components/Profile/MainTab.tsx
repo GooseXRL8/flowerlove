@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent } from "@/components/ui/card";
+import { GlowCard } from "@/components/ui/spotlight-card";
 import TimeCounter from '../TimeCounter';
 import FlowerAnimation from '../FlowerAnimation';
 import ThemeSwitcher from '../ThemeSwitcher';
@@ -51,25 +51,23 @@ const MainTab: React.FC<MainTabProps> = ({
     <div className="space-y-8">
       <DatePicker date={startDate} onDateChange={onDateChange} />
       
-      <TimeCounter startDate={startDate} onTimeUpdate={handleTimeUpdate} />
+      <TimeCounter startDate={startDate} onTimeUpdate={handleTimeUpdate} mainImageUrl={mainImageUrl} />
       
-      <Card>
-        <CardContent className="flex items-center justify-center py-6">
+      <GlowCard glowColor="green" customSize className="p-6">
+        <div className="flex items-center justify-center">
           <FlowerAnimation relationshipDuration={relationshipDuration} />
-        </CardContent>
-      </Card>
+        </div>
+      </GlowCard>
       
       <ThemeSwitcher currentTheme={theme} onThemeChange={onThemeChange} />
       
-      <Card>
-        <CardContent className="p-6">
-          <InstagramShareButton
-            coupleImageUrl={mainImageUrl}
-            timeText={formatRelationshipTime(relationshipDuration)}
-            appTitle={appTitle}
-          />
-        </CardContent>
-      </Card>
+      <GlowCard glowColor="blue" customSize className="p-6">
+        <InstagramShareButton
+          coupleImageUrl={mainImageUrl}
+          timeText={formatRelationshipTime(relationshipDuration)}
+          appTitle={appTitle}
+        />
+      </GlowCard>
     </div>
   );
 };
