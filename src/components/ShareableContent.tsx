@@ -44,6 +44,14 @@ const ShareableContent: React.FC<ShareableContentProps> = ({
                 alt="Couple photo" 
                 className="w-full h-full object-cover"
                 crossOrigin="anonymous"
+                onError={(e) => {
+                  console.error('Erro ao carregar imagem:', coupleImageUrl);
+                  // Fallback para imagem padrão se houver erro
+                  (e.target as HTMLImageElement).src = "/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png";
+                }}
+                onLoad={() => {
+                  console.log('Imagem carregada com sucesso:', coupleImageUrl);
+                }}
               />
             </AspectRatio>
           </div>

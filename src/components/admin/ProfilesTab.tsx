@@ -85,7 +85,7 @@ export const ProfilesTab = () => {
       
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {profiles.map((profile) => {
-          const assignedUser = users.find(u => u.id === profile.assignedUserId);
+          const assignedUser = users.find(u => u.assignedProfileId === profile.id);
           
           return (
             <Card key={profile.id} className="overflow-hidden">

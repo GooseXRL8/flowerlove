@@ -75,19 +75,6 @@ const ProfilePage = () => {
         </Button>
       </div>
       
-      {profile && currentUser?.isAdmin && (
-        <div className="fixed top-4 right-4 z-50 bg-card p-2 rounded-md shadow-md border">
-          <div className="text-xs text-muted-foreground mb-1">Credenciais do perfil:</div>
-          {profile.assignedUserId ? (
-            <div className="text-sm font-mono">
-              {users.find(u => u.id === profile.assignedUserId)?.username} / 
-              {users.find(u => u.id === profile.assignedUserId)?.password}
-            </div>
-          ) : (
-            <div className="text-sm">Nenhum usuário associado</div>
-          )}
-        </div>
-      )}
       
       <HomePage />
     </>
