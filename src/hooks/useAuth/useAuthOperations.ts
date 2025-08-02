@@ -140,13 +140,23 @@ export function useAuthOperations(
     if (!profileToUpdate) return;
     
     const updatedProfile = { ...profileToUpdate, ...data };
-    await dbProfiles.update(updatedProfile);
+    console.log("Updating profile:", id, "with data:", data);
+    console.log("Updated profile object:", updatedProfile);
     
+    const success = await dbProfiles.update(updatedProfile);
+    if (!success) {
+      console.error("Failed to update profile in database");
+      throw new Error("Failed to update profile");
+    }
+    
+    // Update local state immediately
     setProfiles(prev => 
       prev.map(profile => 
         profile.id === id ? updatedProfile : profile
       )
     );
+    
+    console.log("Profile updated successfully in local state");
   };
 
   const assignUserToProfile = async (userId: string, profileId: string) => {

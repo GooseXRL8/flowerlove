@@ -36,7 +36,7 @@ export function useProfile() {
 
   // Effect to load profile data
   useEffect(() => {
-    if (!profileId) return;
+    if (!profileId || !profiles.length) return;
     
     // Find the profile in the profiles array
     const profile = profiles.find(p => p.id === profileId);
@@ -44,15 +44,24 @@ export function useProfile() {
     
     console.log("Loading profile data:", profile);
     
-    // Set state from profile data
-    if (profile.customTitle) setAppTitle(profile.customTitle);
-    if (profile.startDate) setStartDate(profile.startDate);
-    if (profile.imageUrl) setMainImageUrl(profile.imageUrl);
+    // Set state from profile data - only update if different to avoid loops
+    if (profile.customTitle && profile.customTitle !== appTitle) {
+      setAppTitle(profile.customTitle);
+    }
+    if (profile.startDate && profile.startDate.getTime() !== startDate.getTime()) {
+      setStartDate(profile.startDate);
+    }
+    if (profile.imageUrl && profile.imageUrl !== mainImageUrl) {
+      console.log("Updating image URL from profile:", profile.imageUrl);
+      setMainImageUrl(profile.imageUrl);
+    }
     
     // Load theme from localStorage as it's user-specific
     const savedTheme = localStorage.getItem(`theme_${profileId}`) as Theme;
-    if (savedTheme) setTheme(savedTheme);
-  }, [profileId, profiles]);
+    if (savedTheme && savedTheme !== theme) {
+      setTheme(savedTheme);
+    }
+  }, [profileId, profiles]); // Removed dependencies that could cause loops
   
   // Effect to apply theme
   useEffect(() => {
