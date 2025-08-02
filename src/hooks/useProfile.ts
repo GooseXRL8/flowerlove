@@ -36,32 +36,58 @@ export function useProfile() {
 
   // Effect to load profile data
   useEffect(() => {
-    if (!profileId || !profiles.length) return;
+    if (!profileId || !profiles.length) {
+      console.log("Profile loading skipped - missing profileId or profiles:", { profileId, profilesLength: profiles.length });
+      return;
+    }
     
     // Find the profile in the profiles array
     const profile = profiles.find(p => p.id === profileId);
-    if (!profile) return;
+    if (!profile) {
+      console.log("Profile not found for ID:", profileId);
+      return;
+    }
     
-    console.log("Loading profile data:", profile);
+    console.log("Loading profile data for", profileId, ":", profile);
     
-    // Set state from profile data - only update if different to avoid loops
+    // Use a ref to track if we need to update state to avoid loops
+    let shouldUpdate = false;
+    
+    // Check if we need to update each piece of state
     if (profile.customTitle && profile.customTitle !== appTitle) {
+      console.log("Updating title:", profile.customTitle);
       setAppTitle(profile.customTitle);
+      shouldUpdate = true;
     }
+    
     if (profile.startDate && profile.startDate.getTime() !== startDate.getTime()) {
+      console.log("Updating start date:", profile.startDate);
       setStartDate(profile.startDate);
+      shouldUpdate = true;
     }
+    
     if (profile.imageUrl && profile.imageUrl !== mainImageUrl) {
-      console.log("Updating image URL from profile:", profile.imageUrl);
+      console.log("Updating image URL from:", mainImageUrl, "to:", profile.imageUrl);
       setMainImageUrl(profile.imageUrl);
+      shouldUpdate = true;
     }
+    
+    if (shouldUpdate) {
+      console.log("Profile state updated successfully");
+    }
+  }, [profileId, profiles]); // Remove state dependencies to prevent loops
+  
+  // Separate effect for theme
+  useEffect(() => {
+    if (!profileId) return;
     
     // Load theme from localStorage as it's user-specific
     const savedTheme = localStorage.getItem(`theme_${profileId}`) as Theme;
     if (savedTheme && savedTheme !== theme) {
+      console.log("Loading saved theme:", savedTheme);
       setTheme(savedTheme);
     }
-  }, [profileId, profiles]); // Removed dependencies that could cause loops
+  }, [profileId]);
   
   // Effect to apply theme
   useEffect(() => {

@@ -17,7 +17,7 @@ interface DatePickerProps {
   onDateChange: (date: Date) => void;
 }
 
-export function DatePicker({ date }: DatePickerProps) {
+export function DatePicker({ date, onDateChange }: DatePickerProps) {
   // Calcular o número de anos desde a data de início
   const currentDate = new Date();
   const yearDiff = currentDate.getFullYear() - date.getFullYear();

@@ -12,6 +12,14 @@ interface TimeCounterProps {
 
 const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate, mainImageUrl }) => {
   const { profileId } = useParams<{ profileId: string }>();
+  
+  // Add logging to track image URL changes
+  console.log("TimeCounter rendered with:", {
+    profileId,
+    mainImageUrl,
+    startDate: startDate.toISOString()
+  });
+  
   const [timeElapsed, setTimeElapsed] = useState({
     years: 0,
     months: 0,
