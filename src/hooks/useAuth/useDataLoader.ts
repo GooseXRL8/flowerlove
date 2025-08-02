@@ -33,10 +33,16 @@ export function useDataLoader(dbInitialized: boolean, setLoading: (loading: bool
         // Load current user from localStorage (just the ID)
         const savedUserId = localStorage.getItem('currentUserId');
         if (savedUserId) {
-          const user = await dbUsers.getById(savedUserId);
-          if (user) {
-            setCurrentUser(user);
-          } else {
+          try {
+            const user = await dbUsers.getById(savedUserId);
+            if (user) {
+              setCurrentUser(user);
+            } else {
+              console.log("User not found in database, clearing localStorage");
+              localStorage.removeItem('currentUserId');
+            }
+          } catch (error) {
+            console.error("Error loading current user:", error);
             localStorage.removeItem('currentUserId');
           }
         }

@@ -5,21 +5,30 @@ import { User } from '@/types/auth';
 // Function to ensure admin and test users exist
 const ensureDefaultUsersExist = async () => {
   console.log("Checking if default users exist in Supabase...");
-  const users = await supabaseUsers.getAll();
-  
-  // Check if admin user exists
-  const adminUser = users.find(u => u.username === 'joao');
-  if (!adminUser) {
-    console.log("Admin user 'joao' already exists in database");
+  try {
+    const users = await supabaseUsers.getAll();
+    
+    // Check if admin user exists
+    const adminUser = users.find(u => u.username === 'joao');
+    if (adminUser) {
+      console.log("Admin user 'joao' exists in database");
+    } else {
+      console.log("Admin user 'joao' not found in database");
+    }
+    
+    // Check if test user exists
+    const testUser = users.find(u => u.username === 'teste');
+    if (testUser) {
+      console.log("Test user 'teste' exists in database");
+    } else {
+      console.log("Test user 'teste' not found in database");
+    }
+    
+    console.log(`Total users found: ${users.length}`);
+  } catch (error) {
+    console.error("Error checking default users:", error);
+    throw error;
   }
-  
-  // Check if test user exists
-  const testUser = users.find(u => u.username === 'teste');
-  if (!testUser) {
-    console.log("Test user 'teste' already exists in database");
-  }
-  
-  console.log("Default users check completed");
 };
 
 // Initialize Supabase connection and verify data

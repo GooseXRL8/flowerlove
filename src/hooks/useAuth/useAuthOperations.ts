@@ -38,7 +38,7 @@ export function useAuthOperations(
   const createUser = async (username: string, isAdmin: boolean, profileId?: string) => {
     const password = generatePassword();
     const newUser: User = {
-      id: '', // Let Supabase generate UUID - this will be ignored
+      id: crypto.randomUUID(),
       username,
       password,
       isAdmin,
@@ -97,7 +97,7 @@ export function useAuthOperations(
     }
     
     const newProfile: CoupleProfile = {
-      id: '', // Let Supabase generate UUID - this will be ignored
+      id: crypto.randomUUID(),
       name,
       createdBy: currentUser.id,
       startDate: new Date(),

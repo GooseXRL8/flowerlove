@@ -31,9 +31,10 @@ export const supabaseProfiles = {
         .from('profiles')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
+      if (!data) return null;
       
       return {
         id: data.id,

@@ -29,9 +29,10 @@ export const supabaseUsers = {
         .from('users')
         .select('*')
         .eq('id', id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
+      if (!data) return null;
       
       return {
         id: data.id,
