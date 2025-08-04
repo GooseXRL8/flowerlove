@@ -67,7 +67,7 @@ const ProfilePage = () => {
   }
 
   return (
-    <>
+    <div className="min-h-screen gradient-dreamy">
       <div className="fixed top-4 left-4 z-50">
         <Button variant="outline" size="sm" onClick={() => navigate('/dashboard')}>
           <ArrowLeft className="h-4 w-4 mr-2" />
@@ -75,9 +75,8 @@ const ProfilePage = () => {
         </Button>
       </div>
       
-      
       <HomePage />
-    </>
+    </div>
   );
 };
 
