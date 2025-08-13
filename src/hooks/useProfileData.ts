@@ -12,11 +12,23 @@ export function useProfileData() {
   // Find current profile
   const currentProfile = profiles.find(p => p.id === profileId);
   
+  // Get default image based on profileId to avoid same image for all profiles
+  const getDefaultImage = (profileId?: string) => {
+    if (!profileId) return "/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png";
+    // Use different default images based on profile ID hash
+    const images = [
+      "/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png",
+      "/lovable-uploads/a60a0dbc-45be-4ae8-9b7d-eb2cbc8e133e.png"
+    ];
+    const hash = profileId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
+    return images[hash % images.length];
+  };
+
   // Initialize state with profile data or defaults
   const [profileData, setProfileData] = useState({
     theme: 'default' as Theme,
     appTitle: currentProfile?.customTitle || "Nosso Amor",
-    mainImageUrl: currentProfile?.imageUrl || "/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png",
+    mainImageUrl: currentProfile?.imageUrl || getDefaultImage(profileId),
     startDate: currentProfile?.startDate || new Date(2024, 8, 7),
   });
 
@@ -37,7 +49,7 @@ export function useProfileData() {
     setProfileData(prev => ({
       ...prev,
       appTitle: currentProfile.customTitle || "Nosso Amor",
-      mainImageUrl: currentProfile.imageUrl || "/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png",
+      mainImageUrl: currentProfile.imageUrl || getDefaultImage(profileId),
       startDate: currentProfile.startDate || new Date(2024, 8, 7),
     }));
   }, [currentProfile]);
@@ -120,7 +132,7 @@ export function useProfileData() {
       // Revert local state on error
       setProfileData(prev => ({ 
         ...prev, 
-        mainImageUrl: currentProfile?.imageUrl || "/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png" 
+        mainImageUrl: currentProfile?.imageUrl || getDefaultImage(profileId) 
       }));
       toast({
         title: "Erro",
