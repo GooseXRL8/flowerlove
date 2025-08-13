@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProfile } from '@/hooks/useProfile';
 import ProfileHeader from './Profile/ProfileHeader';
@@ -8,15 +8,14 @@ import MemorialsTab from './MemorialsTab';
 import SettingsTab from './SettingsTab';
 
 const HomePage: React.FC = () => {
+  const [activeTab, setActiveTab] = useState("main");
+  
   const {
     theme,
-    activeTab,
     appTitle,
     mainImageUrl,
     startDate,
     duration,
-    setActiveTab,
-    setDuration,
     handleThemeChange,
     handleTitleChange,
     handleDateChange,
@@ -53,7 +52,7 @@ const HomePage: React.FC = () => {
               theme={theme}
               onThemeChange={handleThemeChange}
               onDateChange={handleDateChange}
-              onTimeUpdate={setDuration}
+              onTimeUpdate={() => {}}
               appTitle={appTitle}
               mainImageUrl={mainImageUrl}
             />
