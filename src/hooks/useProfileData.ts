@@ -35,7 +35,7 @@ export function useProfileData() {
     }
   }, [profileId]);
 
-  // Sync with profile data changes
+  // Sync with profile data changes - always use latest image_url
   useEffect(() => {
     if (!currentProfile) return;
     
@@ -45,7 +45,7 @@ export function useProfileData() {
       mainImageUrl: currentProfile.imageUrl || getDefaultImage(),
       startDate: currentProfile.startDate || new Date(2024, 8, 7),
     }));
-  }, [currentProfile]);
+  }, [currentProfile?.customTitle, currentProfile?.imageUrl, currentProfile?.startDate]);
 
   // Apply theme to document
   useEffect(() => {
@@ -114,26 +114,22 @@ export function useProfileData() {
     if (!profileId) return;
     
     try {
-      setProfileData(prev => ({ ...prev, mainImageUrl: newImageUrl }));
+      // Update profile in database first
       await updateProfile(profileId, { imageUrl: newImageUrl });
+      // Local state will be updated via the useEffect that watches currentProfile
       toast({
         title: "Imagem salva",
         description: "A imagem foi atualizada com sucesso.",
       });
     } catch (error) {
       console.error("Failed to update profile image:", error);
-      // Revert local state on error
-      setProfileData(prev => ({ 
-        ...prev, 
-        mainImageUrl: currentProfile?.imageUrl || getDefaultImage() 
-      }));
       toast({
         title: "Erro",
         description: "Não foi possível salvar a imagem.",
         variant: "destructive"
       });
     }
-  }, [profileId, updateProfile, currentProfile]);
+  }, [profileId, updateProfile]);
 
   return {
     profileId,

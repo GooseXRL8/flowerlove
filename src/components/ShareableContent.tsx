@@ -40,7 +40,8 @@ const ShareableContent: React.FC<ShareableContentProps> = ({
           <div className="w-80 h-80 rounded-full overflow-hidden border-4 border-primary/30 shadow-romantic">
             <AspectRatio ratio={1} className="bg-secondary/20">
               <img 
-                src={coupleImageUrl} 
+                key={coupleImageUrl} // Force re-render when URL changes
+                src={coupleImageUrl || "/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png"} 
                 alt="Couple photo" 
                 className="w-full h-full object-cover"
                 crossOrigin="anonymous"

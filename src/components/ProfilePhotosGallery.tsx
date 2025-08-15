@@ -96,6 +96,7 @@ const ProfilePhotosGallery: React.FC<ProfilePhotosGalleryProps> = ({
                 <div key={photo.id} className="relative group">
                   <div className="aspect-square rounded-lg overflow-hidden bg-muted">
                     <img
+                      key={photo.url} // Force re-render when URL changes
                       src={photo.url}
                       alt="Foto do perfil"
                       className="w-full h-full object-cover transition-transform group-hover:scale-105"
