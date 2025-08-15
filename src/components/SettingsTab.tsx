@@ -36,14 +36,14 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
   const [newImageUrl, setNewImageUrl] = useState("");
   const { currentUser } = useAuth();
 
-  const handleImageUpdate = () => {
+  const handleImageUpdate = async () => {
     if (newImageUrl.trim()) {
-      onImageChange(newImageUrl);
-      setNewImageUrl("");
-      toast({
-        title: "Imagem atualizada",
-        description: "A imagem principal foi atualizada com sucesso.",
-      });
+      try {
+        await onImageChange(newImageUrl);
+        setNewImageUrl("");
+      } catch (error) {
+        console.error("Erro ao atualizar imagem:", error);
+      }
     }
   };
 
@@ -119,6 +119,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
                 onClick={handleImageUpdate}
                 disabled={!newImageUrl.trim()}
                 size="sm"
+                type="button"
               >
                 <Image className="h-4 w-4" />
               </Button>
