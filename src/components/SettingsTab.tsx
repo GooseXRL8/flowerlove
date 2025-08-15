@@ -16,7 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import ProfilePhotosGallery from "@/components/ProfilePhotosGallery";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from '@/hooks/useAuth/AuthContext';
 
 interface SettingsTabProps {
   title: string;
