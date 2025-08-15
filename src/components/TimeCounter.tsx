@@ -96,7 +96,7 @@ const TimeCounter: React.FC<TimeCounterProps> = ({ startDate, onTimeUpdate, main
       <div className="w-full relative">
         <AspectRatio ratio={16/12} className="bg-secondary/20">
           <img 
-            src={mainImageUrl} 
+            src={mainImageUrl || "/lovable-uploads/7257428d-662d-455e-9541-5f4a07cc87c2.png"} 
             alt="Couple photo" 
             className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
             onError={(e) => {
