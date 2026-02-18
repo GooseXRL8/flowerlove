@@ -8,6 +8,7 @@ export interface AuthContextType {
   users: User[];
   loading: boolean;
   login: (username: string, password: string) => Promise<boolean>;
+  register: (username: string, password: string) => Promise<boolean>;
   logout: () => void;
   createUser: (username: string, isAdmin: boolean, profileId?: string) => Promise<User>;
   createProfile: (name: string) => Promise<CoupleProfile>;

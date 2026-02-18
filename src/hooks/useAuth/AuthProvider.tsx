@@ -22,6 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Auth operations
   const { 
     login,
+    register,
     logout,
     createUser,
     deleteUser,
@@ -43,6 +44,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     profiles,
     users,
     login,
+    register,
     logout,
     createUser,
     deleteUser,
