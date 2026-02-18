@@ -14,7 +14,134 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      memories: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          image_url: string | null
+          is_favorite: boolean | null
+          location: string | null
+          memory_date: string
+          profile_id: string
+          tags: string[] | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_favorite?: boolean | null
+          location?: string | null
+          memory_date: string
+          profile_id: string
+          tags?: string[] | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_favorite?: boolean | null
+          location?: string | null
+          memory_date?: string
+          profile_id?: string
+          tags?: string[] | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "memories_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profile_photos: {
+        Row: {
+          created_at: string | null
+          id: string
+          url: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          url: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          url?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          assigned_user_id: string | null
+          created_at: string | null
+          created_by: string
+          custom_title: string | null
+          id: string
+          image_url: string | null
+          name: string
+          start_date: string
+        }
+        Insert: {
+          assigned_user_id?: string | null
+          created_at?: string | null
+          created_by: string
+          custom_title?: string | null
+          id?: string
+          image_url?: string | null
+          name: string
+          start_date: string
+        }
+        Update: {
+          assigned_user_id?: string | null
+          created_at?: string | null
+          created_by?: string
+          custom_title?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          start_date?: string
+        }
+        Relationships: []
+      }
+      users: {
+        Row: {
+          assigned_profile_id: string | null
+          created_at: string | null
+          id: string
+          is_admin: boolean | null
+          password: string
+          username: string
+        }
+        Insert: {
+          assigned_profile_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          password: string
+          username: string
+        }
+        Update: {
+          assigned_profile_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_admin?: boolean | null
+          password?: string
+          username?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
