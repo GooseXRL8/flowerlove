@@ -30,6 +30,36 @@ export function useAuthOperations(
     return false;
   };
 
+  const register = async (username: string, password: string) => {
+    // Check if username already exists
+    const existing = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+    if (existing) {
+      return false;
+    }
+
+    const newUser: User = {
+      id: crypto.randomUUID(),
+      username,
+      password,
+      isAdmin: false,
+    };
+
+    const success = await dbUsers.create(newUser);
+    if (!success) return false;
+
+    const updatedUsers = await dbUsers.getAll();
+    setUsers(updatedUsers);
+
+    // Auto-login after register
+    const created = updatedUsers.find(u => u.username.toLowerCase() === username.toLowerCase());
+    if (created) {
+      setCurrentUser(created);
+      localStorage.setItem('currentUserId', created.id);
+    }
+
+    return true;
+  };
+
   const logout = () => {
     setCurrentUser(null);
     localStorage.removeItem('currentUserId');
@@ -193,6 +223,7 @@ export function useAuthOperations(
 
   return {
     login,
+    register,
     logout,
     createUser,
     deleteUser,

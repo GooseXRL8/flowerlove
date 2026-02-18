@@ -10,8 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-  const { login, currentUser, loading } = useAuth();
+  const [isSignUp, setIsSignUp] = useState(false);
+  const { login, register, currentUser, loading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
@@ -26,34 +28,41 @@ const Login = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    console.log("Login attempt with:", username, password);
-    
+    if (isSignUp) {
+      if (password !== confirmPassword) {
+        toast({ title: "Erro", description: "As senhas não coincidem", variant: "destructive" });
+        return;
+      }
+      if (password.length < 4) {
+        toast({ title: "Erro", description: "A senha deve ter pelo menos 4 caracteres", variant: "destructive" });
+        return;
+      }
+      try {
+        setIsLoggingIn(true);
+        const success = await register(username, password);
+        if (success) {
+          toast({ title: "Conta criada!", description: "Bem-vindo ao FlowerLove! 💕" });
+        } else {
+          toast({ title: "Erro", description: "Nome de usuário já existe", variant: "destructive" });
+        }
+      } catch (error) {
+        toast({ title: "Erro", description: "Erro ao criar conta", variant: "destructive" });
+      } finally {
+        setIsLoggingIn(false);
+      }
+      return;
+    }
+
     try {
       setIsLoggingIn(true);
       const success = await login(username, password);
-      
       if (success) {
-        toast({
-          title: "Login bem-sucedido",
-          description: "Você foi autenticado com sucesso!",
-        });
-        
-        // Let the useEffect handle redirection
+        toast({ title: "Login bem-sucedido", description: "Você foi autenticado com sucesso!" });
       } else {
-        console.log("Login failed");
-        toast({
-          title: "Falha no login",
-          description: "Nome de usuário ou senha incorretos",
-          variant: "destructive",
-        });
+        toast({ title: "Falha no login", description: "Nome de usuário ou senha incorretos", variant: "destructive" });
       }
     } catch (error) {
-      console.error("Login error:", error);
-      toast({
-        title: "Erro no login",
-        description: "Ocorreu um erro ao tentar fazer login",
-        variant: "destructive",
-      });
+      toast({ title: "Erro no login", description: "Ocorreu um erro ao tentar fazer login", variant: "destructive" });
     } finally {
       setIsLoggingIn(false);
     }
@@ -82,11 +91,11 @@ const Login = () => {
           <div className="mb-4">
             <div className="text-6xl animate-heart-beat mb-4">💕</div>
             <h1 className="text-4xl font-romantic font-bold bg-gradient-to-r from-primary via-primary/80 to-secondary bg-clip-text text-transparent">
-              FlowerLove
+              {isSignUp ? 'Criar Conta' : 'FlowerLove'}
             </h1>
           </div>
           <p className="text-base font-body text-muted-foreground">
-            Entre na sua conta e acompanhe sua jornada de amor
+            {isSignUp ? 'Crie sua conta e comece sua jornada de amor' : 'Entre na sua conta e acompanhe sua jornada de amor'}
           </p>
         </div>
         
@@ -122,9 +131,26 @@ const Login = () => {
                 placeholder="Digite sua senha"
               />
             </div>
+            {isSignUp && (
+              <div className="space-y-3">
+                <label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
+                  Confirmar Senha
+                </label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={isLoggingIn}
+                  required
+                  className="h-12 rounded-lg border-2 border-border focus:border-primary/50 transition-all duration-300"
+                  placeholder="Confirme sua senha"
+                />
+              </div>
+            )}
           </div>
           
-          <div className="pt-6">
+          <div className="pt-6 space-y-3">
             <Button 
               type="submit" 
               variant="romantic"
@@ -134,16 +160,23 @@ const Login = () => {
               {isLoggingIn ? (
                 <div className="flex items-center gap-2">
                   <div className="animate-spin h-4 w-4 border-2 border-primary-foreground border-t-transparent rounded-full"></div>
-                  Entrando...
+                  {isSignUp ? 'Criando conta...' : 'Entrando...'}
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
                   <span>💖</span>
-                  Entrar
+                  {isSignUp ? 'Criar Conta' : 'Entrar'}
                   <span>💖</span>
                 </div>
               )}
             </Button>
+            <button
+              type="button"
+              onClick={() => { setIsSignUp(!isSignUp); setConfirmPassword(''); }}
+              className="w-full text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              {isSignUp ? 'Já tem uma conta? Entrar' : 'Não tem conta? Cadastre-se'}
+            </button>
           </div>
         </form>
       </GlowCard>
